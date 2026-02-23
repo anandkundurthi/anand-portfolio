@@ -1,28 +1,83 @@
-# Anand Kundurthi — Portfolio
+#  Hi, I'm Anand Kundurthi
 
-Personal portfolio built with React + Vite.
+Welcome to my personal portfolio repository!  
+I’m a Full Stack Developer skilled in React.js, JavaScript, Python, SQL, and FastAPI.  
+This repository contains the source code for my portfolio website.
 
-## 🚀 Getting Started
+---
 
-```bash
-# Install dependencies
-npm install
+##  Live Portfolio
 
-# Run locally
-npm run dev
+ https://anand-portfolio-self.vercel.app/
 
-# Build for production
-npm run build
-```
+Explore my projects, skills, and professional journey.
 
-## 🌐 Deploy on Vercel
+---
 
-1. Push this folder to a GitHub repository
-2. Go to [vercel.com](https://vercel.com) → New Project
-3. Import your GitHub repo
-4. Click **Deploy** — done!
+##  About Me
 
-## 🌐 Deploy on Netlify
+I specialize in building responsive web applications and scalable backend systems with optimized database design.
 
-1. Run `npm run build`
-2. Drag the `dist/` folder to [app.netlify.com/drop](https://app.netlify.com/drop)
+Core strengths:
+
+- Frontend Development using **React.js, HTML5, CSS3, JavaScript**
+- Backend Development using **Python & FastAPI**
+- Database Design & Query Optimization using **SQL, MySQL**
+- REST API Development
+- Strong foundation in **Data Structures, OOP, and DBMS**
+- UI/UX Design with Figma
+
+---
+
+##  Tech Stack
+
+**Frontend:**  
+React.js · JavaScript · HTML5 · CSS3 · Responsive Design  
+
+**Backend:**  
+Python · FastAPI · Node.js · REST APIs  
+
+**Database:**  
+SQL · MySQL · MongoDB · Database Normalization  
+
+**Tools & Concepts:**  
+Git · GitHub · OOP · Data Structures · DBMS  
+
+---
+
+##  Featured Projects
+
+###  SupplySync – Product & Stock Management Database  
+Retail database system built with MySQL, implementing normalized schema design and solving real-world business queries.
+
+###  BiblioBase – Library Management System  
+Relational database system managing books, members, and transactions with optimized SQL queries.
+
+###  Color Picker  
+Interactive frontend application demonstrating DOM manipulation and event handling.
+
+###  Traffic Light Simulation  
+JavaScript-based simulation of real-world traffic signals using timed state transitions.
+
+---
+
+##  Let’s Connect
+
+I’m actively seeking opportunities as:
+
+- Frontend Developer  
+- Python Developer  
+- SQL / Database Developer  
+- Full Stack Developer  
+
+📩 Open to entry-level roles, internships, and full-time positions.
+
+LinkedIn:  
+https://www.linkedin.com/in/anand-venkata-raghava-sai-kundurthi-75914a358/
+
+GitHub:  
+https://github.com/anandkundurthi
+
+---
+
+ If you like this project, consider giving it a star!
