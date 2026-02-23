@@ -243,7 +243,7 @@ export default function App() {
           </p>
           <div className="fade5" style={{ display:"flex", gap:"1rem", flexWrap:"wrap" }}>
             <button className="btn-primary" onClick={() => scrollTo("projects")}>View Projects ↓</button>
-            <a className="btn-ghost" href="https://anandkundurthiportfolio.vercel.app/" target="_blank" rel="noreferrer">Live Portfolio ↗</a>
+            <a className="btn-ghost" href="https://anand-portfolio-self.vercel.app/" target="_blank" rel="noreferrer">Live Portfolio ↗</a>
             <button className="btn-ghost" onClick={() => scrollTo("contact")}>Say Hello 👋</button>
           </div>
         </div>
