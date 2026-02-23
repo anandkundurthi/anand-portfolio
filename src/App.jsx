@@ -404,7 +404,7 @@ export default function App() {
             </p>
             <div style={{ display:"flex", gap:"1rem", justifyContent:"center", flexWrap:"wrap", marginBottom:"1.5rem" }}>
               <a className="btn-primary" href="mailto:anandsarmak@gmail.com">📧 Send Email</a>
-              <a className="btn-ghost" href="https://www.linkedin.com/in/anand-venkata-raghava-saikundurthi-75914a358" target="_blank" rel="noreferrer">LinkedIn ↗</a>
+              <a className="btn-ghost" href="https://www.linkedin.com/in/anand-venkata-raghava-sai-kundurthi-75914a358/" target="_blank" rel="noreferrer">LinkedIn ↗</a>
               <a className="btn-ghost" href="https://github.com/anandkundurthi" target="_blank" rel="noreferrer">GitHub ↗</a>
             </div>
             <div style={{ fontSize:12, color:"#7a7a99" }}>📍 Nuzvid, Andhra Pradesh &nbsp;·&nbsp; 📞 +91 7093254137</div>
