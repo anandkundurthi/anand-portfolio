@@ -237,10 +237,19 @@ export default function App() {
             Anand<br />
             <span style={{ background:"linear-gradient(135deg,#a78bfa,#f472b6)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>Kundurthi</span>
           </h1>
-          <p className="fade4" style={{ fontSize:"clamp(0.9rem,2vw,1.1rem)", color:"#7a7a99", maxWidth:520, margin:"2rem 0 2.5rem", lineHeight:1.8 }}>
-            Aspiring Full Stack Developer & UI/UX Designer crafting clean code and beautiful interfaces —{" "}
-            <em style={{ color:"#f2f0ff", fontStyle:"normal" }}>Python · React · Figma · SQL</em>
-          </p>
+          <p 
+              className="fade4" 
+          style={{ 
+                    fontSize:"clamp(0.9rem,2vw,1.1rem)", 
+                    color:"#7a7a99", 
+                    maxWidth:520, 
+                    margin:"2rem 0 2.5rem", 
+                    lineHeight:1.8 
+              }}
+            >
+              Full Stack Developer skilled in React.js, JavaScript, Python, SQL, and database design with a strong foundation in Data Structures and DBMS. 
+              Focused on building scalable web applications, optimized backend systems, and responsive user-centered interfaces using MERN stack and FastAPI.
+            </p>
           <div className="fade5" style={{ display:"flex", gap:"1rem", flexWrap:"wrap" }}>
             <button className="btn-primary" onClick={() => scrollTo("projects")}>View Projects ↓</button>
             <a className="btn-ghost" href="https://anand-portfolio-self.vercel.app/" target="_blank" rel="noreferrer">Live Portfolio ↗</a>
