@@ -386,7 +386,7 @@ export default function App() {
           <div style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap" }}>
             <button className="btn-cyan" onClick={() => scrollTo("projects")}>View Projects</button>
             <a href="https://ai-resume-analyzer-tuet.onrender.com" target="_blank" rel="noreferrer" className="btn-ghost">Live Project</a>
-            <a href="https://drive.google.com/file/d/YOUR_RESUME_DRIVE_ID/view" target="_blank" rel="noreferrer" className="btn-green">Resume</a>
+            <a href="https://drive.google.com/file/d/1PEuAK9LEg8flKRgUPYbi0wOdSpA7Qx7U/view" target="_blank" rel="noreferrer" className="btn-green">Resume</a>
             <button className="btn-ghost" onClick={() => scrollTo("contact")}>Say Hello</button>
           </div>
         </div>
