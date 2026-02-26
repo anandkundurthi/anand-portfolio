@@ -2,6 +2,17 @@ import { useState, useEffect } from "react";
 
 const projects = [
   {
+    emoji: "📄",
+    year: "2025",
+    type: "Python · FastAPI · SQLite",
+    name: "AI Resume Analyzer — Full Stack Web App",
+    desc: "A full-stack resume analysis tool that compares resumes against job descriptions using a skill-based matching algorithm. Features user authentication, PDF extraction, animated match score, skill gap analysis, career suggestions, and analysis history dashboard.",
+    github: "https://github.com/anandkundurthi/ai-resume-analyzer",
+    live: "https://ai-resume-analyzer-tuet.onrender.com",
+    bg: "linear-gradient(135deg,#001a33,#002d5e,#003f85)",
+    accent: "#60a5fa",
+  },
+  {
     emoji: "🛒",
     year: "2025",
     type: "SQL · MySQL · Database",
@@ -10,16 +21,6 @@ const projects = [
     github: "https://github.com/anandkundurthi/Dmart_mall_management",
     bg: "linear-gradient(135deg,#001a33,#002d5e,#003f85)",
     accent: "#60a5fa",
-  },
-  {
-    emoji: "📚",
-    year: "2025",
-    type: "SQL · MySQL · Database",
-    name: "BiblioBase — Library Management Database System",
-    desc: "A comprehensive library management system built with MySQL — handling book cataloging, member records, issue & return tracking, fine calculation, and availability queries. Demonstrates relational database design and real-world SQL problem solving.",
-    github: "https://github.com/anandkundurthi/library-management-sql",
-    bg: "linear-gradient(135deg,#1a0a00,#3d1f00,#6b3800)",
-    accent: "#fb923c",
   },
   {
     emoji: "🎨",
@@ -54,12 +55,12 @@ const projects = [
 ];
 
 const skills = [
+  { icon: "🐍", name: "Backend Dev", tags: ["Python", "FastAPI", "Node.js", "REST APIs", "Express", "Session Auth", "Uvicorn"] },
+  { icon: "⚛️", name: "Frontend Dev", tags: ["React.js", "HTML5", "CSS3", "JavaScript", "Jinja2", "Responsive Design"] },
+  { icon: "🗄️", name: "Database", tags: ["SQL", "MySQL", "PostgreSQL", "MongoDB", "SQLite", "SQLAlchemy ORM"] },
   { icon: "🎨", name: "UI/UX Design", tags: ["Figma", "Canva", "Wireframing", "Prototyping", "Usability Testing"] },
-  { icon: "⚛️", name: "Frontend Dev", tags: ["React.js", "HTML5", "CSS3", "JavaScript", "Responsive Design"] },
-  { icon: "🐍", name: "Backend Dev", tags: ["Python", "FastAPI", "Node.js", "REST APIs", "Express"] },
-  { icon: "🗄️", name: "Database", tags: ["SQL", "MySQL", "DBMS", "MongoDB", "Data Engineering"] },
-  { icon: "🧠", name: "CS Fundamentals", tags: ["DSA", "OOP", "Debugging", "Problem Solving"] },
-  { icon: "🤝", name: "Soft Skills", tags: ["Communication", "Collaboration", "Creativity", "Critical Thinking"] },
+  { icon: "🛠️", name: "Tools & DevOps", tags: ["Git", "GitHub", "Linux", "PyPDF2", "Cloud Deployment", "Render", "Vite"] },
+  { icon: "🧠", name: "CS Fundamentals", tags: ["DSA", "OOP", "DBMS", "Problem Solving", "Debugging"] },
 ];
 
 const certs = [
@@ -70,8 +71,8 @@ const certs = [
 ];
 
 const marqueeItems = [
-  "Python","React.js","FastAPI","Figma","SQL","UI/UX","MERN Stack","JavaScript","Node.js","MongoDB",
-  "Python","React.js","FastAPI","Figma","SQL","UI/UX","MERN Stack","JavaScript","Node.js","MongoDB",
+  "Python","React.js","FastAPI","Figma","SQL","Full-Stack","MERN Stack","JavaScript","Node.js","MongoDB",
+  "Python","React.js","FastAPI","Figma","SQL","Full-Stack","MERN Stack","JavaScript","Node.js","MongoDB",
 ];
 
 export default function App() {
@@ -196,7 +197,7 @@ export default function App() {
         }
       `}</style>
 
-      {/* ── NAV ── */}
+      {/* NAV */}
       <nav style={{
         position: "sticky", top: 0, zIndex: 100,
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -219,14 +220,13 @@ export default function App() {
         </div>
       </nav>
 
-      {/* ── HERO ── */}
+      {/* HERO */}
       <section id="about" className="hero-section" style={{
         minHeight: "92vh", display: "flex", flexDirection: "column",
         justifyContent: "center", padding: "5rem 4rem 3rem", position: "relative", overflow: "hidden"
       }}>
         <div style={{ position:"absolute", width:600, height:600, borderRadius:"50%", background:"radial-gradient(circle,rgba(123,94,167,0.18) 0%,transparent 70%)", top:-150, right:-150, pointerEvents:"none", animation:"floatA 9s ease-in-out infinite" }} />
         <div style={{ position:"absolute", width:350, height:350, borderRadius:"50%", background:"radial-gradient(circle,rgba(74,222,128,0.08) 0%,transparent 70%)", bottom:0, left:"5%", pointerEvents:"none", animation:"floatB 12s ease-in-out infinite" }} />
-
         <div style={{ position: "relative", zIndex: 1 }}>
           <div className="fade1" style={{ display:"inline-flex", alignItems:"center", gap:8, border:"1px solid rgba(74,222,128,0.35)", borderRadius:100, padding:"6px 16px", fontSize:11, color:"#4ade80", marginBottom:"2rem", letterSpacing:"0.08em" }}>
             <div style={{ width:7, height:7, background:"#4ade80", borderRadius:"50%", animation:"blink 2s infinite" }} />
@@ -237,28 +237,18 @@ export default function App() {
             Anand<br />
             <span style={{ background:"linear-gradient(135deg,#a78bfa,#f472b6)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>Kundurthi</span>
           </h1>
-          <p 
-            className="fade4" 
-            style={{ 
-              fontSize:"clamp(0.9rem,2vw,1.1rem)", 
-              color:"#cfcfe6",   // changed here
-              maxWidth:520, 
-              margin:"2rem 0 2.5rem", 
-              lineHeight:1.8 
-            }}
-          >
-            Full Stack Developer skilled in React.js, JavaScript, Python, SQL, and database design with a strong foundation in Data Structures and DBMS. 
-            Focused on building scalable web applications, optimized backend systems, and responsive user-centered interfaces using MERN stack and FastAPI.
+          <p className="fade4" style={{ fontSize:"clamp(0.9rem,2vw,1.1rem)", color:"#cfcfe6", maxWidth:520, margin:"2rem 0 2.5rem", lineHeight:1.8 }}>
+            Full-Stack Developer skilled in Python, FastAPI, React.js, SQL, and MERN stack. I build and deploy production-ready web applications — from scalable backend APIs to polished, responsive frontend interfaces.
           </p>
           <div className="fade5" style={{ display:"flex", gap:"1rem", flexWrap:"wrap" }}>
             <button className="btn-primary" onClick={() => scrollTo("projects")}>View Projects ↓</button>
-            <a className="btn-ghost" href="https://anand-portfolio-self.vercel.app/" target="_blank" rel="noreferrer">Live Portfolio ↗</a>
+            <a className="btn-ghost" href="https://ai-resume-analyzer-tuet.onrender.com" target="_blank" rel="noreferrer">Live Project ↗</a>
             <button className="btn-ghost" onClick={() => scrollTo("contact")}>Say Hello 👋</button>
           </div>
         </div>
       </section>
 
-      {/* ── MARQUEE ── */}
+      {/* MARQUEE */}
       <div style={{ overflow:"hidden", padding:"1rem 0", borderTop:"1px solid #1e1e2e", borderBottom:"1px solid #1e1e2e", background:"#0a0a14" }}>
         <div style={{ display:"flex", gap:"3rem", width:"max-content", animation:"marquee 24s linear infinite" }}>
           {marqueeItems.map((t, i) => (
@@ -269,7 +259,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* ── ABOUT ── */}
+      {/* ABOUT */}
       <section style={{ padding:"6rem 4rem" }}>
         <div className="sl-label">About Me</div>
         <div className="about-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"5rem", alignItems:"start" }}>
@@ -281,11 +271,12 @@ export default function App() {
               I'm <strong style={{ color:"#f2f0ff", fontWeight:500 }}>Anand Venkata Raghava Sai Kundurthi</strong> from{" "}
               <strong style={{ color:"#f2f0ff", fontWeight:500 }}>Nuzvid, Andhra Pradesh</strong>. I thrive where clean code meets beautiful design.
               <br /><br />
-              With hands-on <strong style={{ color:"#f2f0ff", fontWeight:500 }}>UI/UX experience at Diigoo</strong> and intensive training at{" "}
-              <strong style={{ color:"#f2f0ff", fontWeight:500 }}>NxtWave CCBP 4.0</strong>, I'm building across the full stack — from Python & FastAPI to React.js & SQL.
+              With hands-on <strong style={{ color:"#f2f0ff", fontWeight:500 }}>Full-Stack experience</strong> building and deploying real projects, UI/UX work at{" "}
+              <strong style={{ color:"#f2f0ff", fontWeight:500 }}>Diigoo</strong>, and intensive training at{" "}
+              <strong style={{ color:"#f2f0ff", fontWeight:500 }}>NxtWave CCBP 4.0</strong>, I build across the full stack — from Python & FastAPI to React.js & SQL.
             </p>
             <div className="stats-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
-              {[["4+","Months industry XP"],["5+","Certifications"],["5","GitHub Projects"],["∞","Willingness to learn"]].map(([n,l]) => (
+              {[["4+","Months industry XP"],["5+","Certifications"],["6","GitHub Projects"],["∞","Willingness to learn"]].map(([n,l]) => (
                 <div key={l} className="stat-box">
                   <div className="syne" style={{ fontSize:"2rem", fontWeight:800, color:"#a78bfa", lineHeight:1, marginBottom:4 }}>{n}</div>
                   <div style={{ fontSize:12, color:"#7a7a99" }}>{l}</div>
@@ -296,16 +287,16 @@ export default function App() {
           <div>
             <div className="exp-card">
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8 }}>
-                <span className="syne" style={{ fontWeight:700, fontSize:"0.95rem" }}>UI/UX Intern</span>
+                <span className="syne" style={{ fontWeight:700, fontSize:"0.95rem" }}>MERN Stack UI/UX Developer</span>
                 <span style={{ fontSize:11, color:"#f472b6", background:"rgba(244,114,182,0.1)", padding:"3px 10px", borderRadius:100 }}>Apr – Jul 2025</span>
               </div>
-              <div style={{ fontSize:13, color:"#a78bfa", marginBottom:8 }}>Diigoo · Hyderabad</div>
+              <div style={{ fontSize:13, color:"#a78bfa", marginBottom:8 }}>Diigoo Tech · Hyderabad</div>
               <p style={{ fontSize:13, color:"#7a7a99", lineHeight:1.7 }}>Designed responsive UIs in Figma, created wireframes and prototypes, conducted usability testing, and collaborated closely with dev teams for smooth design-to-dev handoff.</p>
             </div>
             <div className="exp-card">
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8 }}>
                 <span className="syne" style={{ fontWeight:700, fontSize:"0.95rem" }}>CCBP 4.0 Fellow</span>
-                <span style={{ fontSize:11, color:"#f472b6", background:"rgba(244,114,182,0.1)", padding:"3px 10px", borderRadius:100 }}>2025 – Present</span>
+                <span style={{ fontSize:11, color:"#f472b6", background:"rgba(244,114,182,0.1)", padding:"3px 10px", borderRadius:100 }}>2025 – Ongoing</span>
               </div>
               <div style={{ fontSize:13, color:"#a78bfa", marginBottom:8 }}>NxtWave</div>
               <p style={{ fontSize:13, color:"#7a7a99", lineHeight:1.7 }}>Intensive training in Python, SQL, React.js, FastAPI, DSA, and DBMS with real project-based learning and industry-aligned curriculum.</p>
@@ -314,7 +305,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── SKILLS ── */}
+      {/* SKILLS */}
       <section id="skills" style={{ padding:"6rem 4rem", background:"#0a0a14" }}>
         <div className="sl-label">Skills</div>
         <h2 className="syne" style={{ fontSize:"clamp(2rem,4vw,3rem)", fontWeight:800, letterSpacing:"-0.03em", marginBottom:"0.8rem" }}>What I Bring</h2>
@@ -330,7 +321,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── PROJECTS ── */}
+      {/* PROJECTS */}
       <section id="projects" style={{ padding:"6rem 4rem" }}>
         <div className="sl-label">My Work</div>
         <h2 className="syne" style={{ fontSize:"clamp(2rem,4vw,3rem)", fontWeight:800, letterSpacing:"-0.03em", marginBottom:"0.8rem" }}>Featured Projects</h2>
@@ -349,16 +340,17 @@ export default function App() {
                 </div>
                 <div className="syne" style={{ fontWeight:800, fontSize:"1rem", letterSpacing:"-0.02em", marginBottom:8, lineHeight:1.3 }}>{p.name}</div>
                 <p style={{ fontSize:12, color:"#7a7a99", lineHeight:1.7, marginBottom:"1.2rem" }}>{p.desc}</p>
-                <a href={p.github} target="_blank" rel="noreferrer" className="proj-link">
-                  ↗ {p.github.includes("github") ? "GitHub" : "LinkedIn"}
-                </a>
+                <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                  <a href={p.github} target="_blank" rel="noreferrer" className="proj-link">↗ GitHub</a>
+                  {p.live && <a href={p.live} target="_blank" rel="noreferrer" className="proj-link">🚀 Live Demo</a>}
+                </div>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── EDUCATION ── */}
+      {/* EDUCATION */}
       <section id="education" style={{ padding:"6rem 4rem", background:"#0a0a14" }}>
         <div className="sl-label">Background</div>
         <h2 className="syne" style={{ fontSize:"clamp(2rem,4vw,3rem)", fontWeight:800, letterSpacing:"-0.03em", marginBottom:"3rem" }}>Education &<br />Certifications</h2>
@@ -366,8 +358,8 @@ export default function App() {
           <div>
             <div style={{ fontSize:11, fontWeight:700, letterSpacing:"0.15em", textTransform:"uppercase", color:"#7a7a99", marginBottom:"1.5rem" }}>Academic</div>
             {[
-              { year:"Feb 2025 – Nov 2025", institute:"NxtWave CCBP 4.0 Intensive", degree:"Full Stack Development Program", color:"#a78bfa" },
-              { year:"2018 – 2021", institute:"Krishna University, Machhlipattanam", degree:"Bachelor of Commerce (Computers)", color:"#f472b6" },
+              { year:"Feb 2025 – Ongoing", institute:"NxtWave CCBP 4.0 Intensive", degree:"Full Stack Development Program", color:"#a78bfa" },
+              { year:"2018 – 2021", institute:"Krishna University, Machilipatnam", degree:"Bachelor of Commerce (Computers)", color:"#f472b6" },
             ].map((e, i) => (
               <div key={i} style={{ display:"flex", gap:"1.2rem", marginBottom:"2rem" }}>
                 <div style={{ display:"flex", flexDirection:"column", alignItems:"center" }}>
@@ -397,7 +389,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── CONTACT ── */}
+      {/* CONTACT */}
       <section id="contact" style={{ padding:"6rem 4rem", textAlign:"center" }}>
         <div style={{ maxWidth:600, margin:"0 auto", background:"#0f0f1a", border:"1px solid #1e1e2e", borderRadius:28, padding:"4rem 3rem", position:"relative", overflow:"hidden" }}>
           <div style={{ position:"absolute", top:-60, left:-60, width:200, height:200, background:"radial-gradient(circle,rgba(123,94,167,0.2),transparent 70%)", borderRadius:"50%", pointerEvents:"none" }} />
@@ -408,7 +400,7 @@ export default function App() {
               Let's build something<br />great together!
             </h2>
             <p style={{ color:"#7a7a99", fontSize:"0.9rem", lineHeight:1.9, marginBottom:"2.5rem" }}>
-              Open to fresher/entry-level roles in Frontend Development, UI/UX, or Database.<br />
+              Open to Full-Stack, Backend, and Frontend Developer roles.<br />
               Also open to internships, collaborations, and creative challenges.
             </p>
             <div style={{ display:"flex", gap:"1rem", justifyContent:"center", flexWrap:"wrap", marginBottom:"1.5rem" }}>
@@ -421,7 +413,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
+      {/* FOOTER */}
       <footer style={{ textAlign:"center", padding:"1.5rem 4rem", borderTop:"1px solid #1e1e2e", fontSize:12, color:"#7a7a99" }}>
         Crafted with 💜 curiosity · ☕ coffee · 💻 way too many open tabs &nbsp;·&nbsp; © 2025 Anand Kundurthi
       </footer>
