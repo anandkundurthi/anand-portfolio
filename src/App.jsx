@@ -1,22 +1,23 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
+/* ─── DATA ──────────────────────────────────────────────────────────────── */
 const projects = [
   {
     emoji: "📄", year: "2025", type: "Python · FastAPI · React.js · MySQL", name: "AI Resume Analyzer",
-    desc: "Full-stack AI-powered resume analysis platform that evaluates resumes against job descriptions using skill-matching algorithms. Features PDF text extraction via PyPDF2, REST API scoring with FastAPI, session-based authentication, and an animated dashboard showing match scores and improvement suggestions. Deployed on Render with persistent storage.",
+    desc: "Full-stack AI-powered resume analysis platform that evaluates resumes against job descriptions using skill-matching algorithms. Features PDF text extraction via PyPDF2, REST API scoring with FastAPI, session-based authentication, and an animated dashboard showing match scores and improvement suggestions.",
     github: "https://github.com/anandkundurthi/ai-resume-analyzer",
     live: "https://ai-resume-analyzer-tuet.onrender.com",
     color: "#6ee7f7", num: "01",
   },
   {
     emoji: "🌐", year: "2024–2025", type: "React.js · Node.js · Express.js · PostgreSQL · MongoDB", name: "Full-Stack Web Applications",
-    desc: "Suite of MERN stack applications implementing CRUD operations, REST APIs, and JWT authentication. Responsive UI layouts compatible across desktop and mobile devices. Optimized complex SQL queries using indexing and join optimization techniques to improve database performance.",
+    desc: "Suite of MERN stack applications implementing CRUD operations, REST APIs, and JWT authentication. Responsive UI layouts compatible across desktop and mobile. Optimized complex SQL queries using indexing and join optimization techniques.",
     github: "https://github.com/anandkundurthi",
     live: null, color: "#a5f3c0", num: "02",
   },
   {
     emoji: "🛒", year: "2025", type: "SQL · MySQL · Database Design", name: "SupplySync",
-    desc: "A retail-focused MySQL project simulating real supermarket operations — inventory tracking, supplier handling, customer sales & billing, and business analytics with 20+ real-world SQL solutions and normalized schema design.",
+    desc: "A retail-focused MySQL project simulating real supermarket operations — inventory tracking, supplier handling, customer sales & billing, and business analytics with 20+ real-world SQL solutions.",
     github: "https://github.com/anandkundurthi/Dmart_mall_management",
     live: null, color: "#fde68a", num: "03",
   },
@@ -28,7 +29,7 @@ const projects = [
   },
   {
     emoji: "🚦", year: "2025", type: "HTML · CSS · JavaScript", name: "Traffic Light Simulation",
-    desc: "JavaScript-based simulation of real-world traffic signals using timed state transitions, setInterval timing logic, and CSS class toggling for Red, Yellow, and Green cycles.",
+    desc: "JavaScript-based simulation of real-world traffic signals using timed state transitions, setInterval timing logic, and CSS class toggling.",
     github: "https://github.com/anandkundurthi/traffic_light",
     live: null, color: "#fca5a5", num: "05",
   },
@@ -59,10 +60,173 @@ const STATS = [
   { n: 100, suffix: "%", label: "Willingness to Learn" },
 ];
 
+/* ─── THREE.JS HERO ─────────────────────────────────────────────────────── */
+function ThreeHero() {
+  const mountRef = useRef(null);
+  useEffect(() => {
+    const el = mountRef.current;
+    if (!el) return;
+    let cleanup = null;
+    const script = document.createElement("script");
+    script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+    script.onload = () => {
+      const THREE = window.THREE;
+      const W = el.clientWidth, H = el.clientHeight;
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(W, H);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      el.appendChild(renderer.domElement);
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 100);
+      camera.position.set(0, 0, 5);
+
+      const knotGeo = new THREE.TorusKnotGeometry(1.2, 0.38, 180, 24, 2, 3);
+      const knotMat = new THREE.MeshBasicMaterial({ color: 0x6ee7f7, wireframe: true, opacity: 0.18, transparent: true });
+      const knot = new THREE.Mesh(knotGeo, knotMat);
+      scene.add(knot);
+
+      const sphereGeo = new THREE.SphereGeometry(2.6, 24, 16);
+      const sphereMat = new THREE.MeshBasicMaterial({ color: 0x6ee7f7, wireframe: true, opacity: 0.05, transparent: true });
+      const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+      scene.add(sphere);
+
+      const icoGeo = new THREE.IcosahedronGeometry(1.8, 1);
+      const icoMat = new THREE.MeshBasicMaterial({ color: 0xa5f3c0, wireframe: true, opacity: 0.07, transparent: true });
+      const ico = new THREE.Mesh(icoGeo, icoMat);
+      scene.add(ico);
+
+      const starGeo = new THREE.BufferGeometry();
+      const positions = new Float32Array(300 * 3);
+      for (let i = 0; i < 300 * 3; i++) positions[i] = (Math.random() - 0.5) * 20;
+      starGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0x6ee7f7, size: 0.03, opacity: 0.4, transparent: true })));
+
+      let mouseX = 0, mouseY = 0;
+      const onMouse = (e) => { mouseX = (e.clientX / window.innerWidth - 0.5) * 2; mouseY = -(e.clientY / window.innerHeight - 0.5) * 2; };
+      window.addEventListener("mousemove", onMouse);
+      const onResize = () => { const w = el.clientWidth, h = el.clientHeight; camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); };
+      window.addEventListener("resize", onResize);
+
+      let t = 0, animId;
+      const animate = () => {
+        animId = requestAnimationFrame(animate);
+        t += 0.005;
+        knot.rotation.x = t * 0.4 + mouseY * 0.3;
+        knot.rotation.y = t * 0.6 + mouseX * 0.3;
+        sphere.rotation.y = t * 0.15;
+        sphere.rotation.x = t * 0.08;
+        ico.rotation.x = -t * 0.2 + mouseY * 0.1;
+        ico.rotation.z = t * 0.25 + mouseX * 0.1;
+        renderer.render(scene, camera);
+      };
+      animate();
+
+      cleanup = () => {
+        cancelAnimationFrame(animId);
+        window.removeEventListener("mousemove", onMouse);
+        window.removeEventListener("resize", onResize);
+        renderer.dispose();
+        if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
+      };
+    };
+    document.head.appendChild(script);
+    return () => { if (cleanup) cleanup(); };
+  }, []);
+  return <div ref={mountRef} style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }} />;
+}
+
+/* ─── PARTICLE FIELD ────────────────────────────────────────────────────── */
+function ParticleField() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let W = window.innerWidth, H = window.innerHeight;
+    canvas.width = W; canvas.height = H;
+    let mouse = { x: W / 2, y: H / 2 };
+    const COUNT = 80;
+    const particles = Array.from({ length: COUNT }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
+      r: Math.random() * 1.5 + 0.5, opacity: Math.random() * 0.5 + 0.1,
+    }));
+    const onMouse = (e) => { mouse.x = e.clientX; mouse.y = e.clientY; };
+    const onResize = () => { W = window.innerWidth; H = window.innerHeight; canvas.width = W; canvas.height = H; };
+    window.addEventListener("mousemove", onMouse);
+    window.addEventListener("resize", onResize);
+    let animId;
+    const draw = () => {
+      animId = requestAnimationFrame(draw);
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach(p => {
+        const dx = p.x - mouse.x, dy = p.y - mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) { p.vx += dx / dist * 0.06; p.vy += dy / dist * 0.06; }
+        p.vx *= 0.99; p.vy *= 0.99;
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(110,231,247,${p.opacity})`;
+        ctx.fill();
+      });
+      for (let i = 0; i < COUNT; i++) {
+        for (let j = i + 1; j < COUNT; j++) {
+          const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 110) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(110,231,247,${0.12 * (1 - d / 110)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+    };
+    draw();
+    return () => { cancelAnimationFrame(animId); window.removeEventListener("mousemove", onMouse); window.removeEventListener("resize", onResize); };
+  }, []);
+  return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.65 }} />;
+}
+
+/* ─── TILT CARD ─────────────────────────────────────────────────────────── */
+function TiltCard({ children, color }) {
+  const ref = useRef(null);
+  const [tiltStyle, setTiltStyle] = useState({});
+  const onMove = useCallback((e) => {
+    const rect = ref.current.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    const rotX = ((y - rect.height / 2) / rect.height) * -10;
+    const rotY = ((x - rect.width / 2) / rect.width) * 10;
+    setTiltStyle({ transform: `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.02,1.02,1.02)`, boxShadow: `0 20px 60px rgba(0,0,0,0.5), 0 0 30px ${color}22`, borderColor: color, transition: "box-shadow 0.1s, border-color 0.1s" });
+  }, [color]);
+  const onLeave = useCallback(() => { setTiltStyle({ transform: "perspective(800px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)", transition: "all 0.5s cubic-bezier(0.23,1,0.32,1)" }); }, []);
+  return <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} style={{ transformStyle: "preserve-3d", willChange: "transform", ...tiltStyle }}>{children}</div>;
+}
+
+/* ─── PARALLAX ──────────────────────────────────────────────────────────── */
+function Parallax({ children, speed = 0.15, style: extraStyle }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    const fn = () => {
+      const rect = el.getBoundingClientRect();
+      const center = rect.top + rect.height / 2 - window.innerHeight / 2;
+      el.style.transform = `translateY(${center * speed}px)`;
+    };
+    window.addEventListener("scroll", fn, { passive: true });
+    fn();
+    return () => window.removeEventListener("scroll", fn);
+  }, [speed]);
+  return <div ref={ref} style={{ willChange: "transform", ...extraStyle }}>{children}</div>;
+}
+
+/* ─── HELPERS ───────────────────────────────────────────────────────────── */
 function TypingText() {
-  const [idx, setIdx] = useState(0);
-  const [text, setText] = useState("");
-  const [del, setDel] = useState(false);
+  const [idx, setIdx] = useState(0); const [text, setText] = useState(""); const [del, setDel] = useState(false);
   useEffect(() => {
     const word = TYPING_WORDS[idx];
     const t = setTimeout(() => {
@@ -73,30 +237,17 @@ function TypingText() {
     }, del ? 35 : text.length === word.length ? 1800 : 70);
     return () => clearTimeout(t);
   }, [text, del, idx]);
-  return (
-    <span style={{ color: "#6ee7f7" }}>
-      {text}<span style={{ animation: "blink 1s step-end infinite" }}>_</span>
-    </span>
-  );
+  return <span style={{ color: "#6ee7f7" }}>{text}<span style={{ animation: "blink 1s step-end infinite" }}>_</span></span>;
 }
 
 function Counter({ target, suffix }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const started = useRef(false);
+  const [count, setCount] = useState(0); const ref = useRef(null); const started = useRef(false);
   useEffect(() => {
     const obs = new IntersectionObserver(([e]) => {
       if (e.isIntersecting && !started.current) {
         started.current = true;
-        const steps = 50;
-        const inc = target / steps;
-        let cur = 0, i = 0;
-        const t = setInterval(() => {
-          cur = Math.min(cur + inc, target);
-          setCount(Math.floor(cur));
-          i++;
-          if (i >= steps) clearInterval(t);
-        }, 1200 / steps);
+        const steps = 50; const inc = target / steps; let cur = 0, i = 0;
+        const t = setInterval(() => { cur = Math.min(cur + inc, target); setCount(Math.floor(cur)); i++; if (i >= steps) clearInterval(t); }, 1200 / steps);
       }
     }, { threshold: 0.5 });
     if (ref.current) obs.observe(ref.current);
@@ -106,295 +257,220 @@ function Counter({ target, suffix }) {
 }
 
 function Reveal({ children, delay = 0 }) {
-  const ref = useRef(null);
-  const [vis, setVis] = useState(false);
+  const ref = useRef(null); const [vis, setVis] = useState(false);
   useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setVis(true); obs.disconnect(); }
-    }, { threshold: 0.08 });
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVis(true); obs.disconnect(); } }, { threshold: 0.08 });
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
-  return (
-    <div ref={ref} style={{
-      opacity: vis ? 1 : 0,
-      transform: vis ? "translateY(0)" : "translateY(32px)",
-      transition: `opacity 0.8s ${delay}s cubic-bezier(0.22,1,0.36,1), transform 0.8s ${delay}s cubic-bezier(0.22,1,0.36,1)`,
-    }}>
-      {children}
-    </div>
-  );
+  return <div ref={ref} style={{ opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(32px)", transition: `opacity 0.8s ${delay}s cubic-bezier(0.22,1,0.36,1), transform 0.8s ${delay}s cubic-bezier(0.22,1,0.36,1)` }}>{children}</div>;
 }
 
 function Clock() {
   const [time, setTime] = useState("");
   useEffect(() => {
-    const update = () => {
-      try {
-        setTime(new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", second: "2-digit" }));
-      } catch(e) {
-        setTime(new Date().toLocaleTimeString());
-      }
-    };
-    update();
-    const i = setInterval(update, 1000);
-    return () => clearInterval(i);
+    const update = () => { try { setTime(new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", second: "2-digit" })); } catch { setTime(new Date().toLocaleTimeString()); } };
+    update(); const i = setInterval(update, 1000); return () => clearInterval(i);
   }, []);
   return <span>{time} IST</span>;
 }
 
-function ProjectRow({ p }) {
-  const [hov, setHov] = useState(false);
+/* ─── CUSTOM CURSOR ─────────────────────────────────────────────────────── */
+function CustomCursor() {
+  const dot = useRef(null); const ring = useRef(null);
+  const pos = useRef({ x: 0, y: 0 }); const ringPos = useRef({ x: 0, y: 0 });
+  useEffect(() => {
+    const onMove = (e) => {
+      pos.current = { x: e.clientX, y: e.clientY };
+      if (dot.current) { dot.current.style.left = e.clientX + "px"; dot.current.style.top = e.clientY + "px"; }
+    };
+    window.addEventListener("mousemove", onMove);
+    let animId;
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const animate = () => {
+      animId = requestAnimationFrame(animate);
+      ringPos.current.x = lerp(ringPos.current.x, pos.current.x, 0.12);
+      ringPos.current.y = lerp(ringPos.current.y, pos.current.y, 0.12);
+      if (ring.current) { ring.current.style.left = ringPos.current.x + "px"; ring.current.style.top = ringPos.current.y + "px"; }
+    };
+    animate();
+    return () => { window.removeEventListener("mousemove", onMove); cancelAnimationFrame(animId); };
+  }, []);
   return (
-    <div
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      style={{
-        display: "grid",
-        gridTemplateColumns: "60px 1fr 130px",
-        alignItems: "center",
-        gap: "1.5rem",
-        padding: "1.6rem 2rem",
-        borderBottom: "1px solid rgba(255,255,255,0.05)",
-        background: hov ? "rgba(110,231,247,0.03)" : "transparent",
-        transition: "background 0.3s",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 3, height: 32, background: hov ? p.color : "rgba(255,255,255,0.1)", borderRadius: 2, transition: "background 0.3s", flexShrink: 0 }} />
-        <span style={{ fontFamily: "monospace", fontSize: 11, color: "rgba(255,255,255,0.3)" }}>{p.num}</span>
-      </div>
-      <div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 5, flexWrap: "wrap" }}>
-          <span style={{ fontSize: "1rem", fontWeight: 700, color: hov ? p.color : "#f0f0f8", transition: "color 0.3s", fontFamily: "'Syne', sans-serif" }}>
-            {p.emoji} {p.name}
-          </span>
-          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{p.type}</span>
-        </div>
-        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0 }}>{p.desc}</p>
-      </div>
-      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
-        <a href={p.github} target="_blank" rel="noreferrer" style={{
-          fontSize: 11, color: hov ? p.color : "rgba(255,255,255,0.4)", textDecoration: "none",
-          border: `1px solid ${hov ? p.color : "rgba(255,255,255,0.12)"}`,
-          padding: "5px 12px", borderRadius: 4, transition: "all 0.25s", letterSpacing: "0.05em",
-          whiteSpace: "nowrap",
-        }}>↗ View</a>
-        {p.live && (
-          <a href={p.live} target="_blank" rel="noreferrer" style={{
-            fontSize: 11, color: "#4ade80", textDecoration: "none",
-            border: "1px solid rgba(74,222,128,0.3)",
-            padding: "5px 12px", borderRadius: 4, transition: "all 0.25s",
-            whiteSpace: "nowrap",
-          }}>⬢ Live</a>
-        )}
-      </div>
-    </div>
+    <>
+      <div ref={dot} style={{ position: "fixed", width: 6, height: 6, background: "#6ee7f7", borderRadius: "50%", pointerEvents: "none", zIndex: 9999, transform: "translate(-50%,-50%)", boxShadow: "0 0 10px rgba(110,231,247,0.8)" }} />
+      <div ref={ring} style={{ position: "fixed", width: 32, height: 32, border: "1px solid rgba(110,231,247,0.5)", borderRadius: "50%", pointerEvents: "none", zIndex: 9998, transform: "translate(-50%,-50%)" }} />
+    </>
   );
 }
 
+/* ─── PROJECT ROW ───────────────────────────────────────────────────────── */
+function ProjectRow({ p }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <TiltCard color={p.color}>
+      <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+        style={{ display: "grid", gridTemplateColumns: "60px 1fr 130px", alignItems: "center", gap: "1.5rem", padding: "1.8rem 2rem", borderBottom: "1px solid rgba(255,255,255,0.05)", background: hov ? "rgba(110,231,247,0.025)" : "transparent", transition: "background 0.3s", position: "relative", overflow: "hidden" }}>
+        {hov && <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, ${p.color}08, transparent)`, pointerEvents: "none" }} />}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 3, height: 36, background: hov ? p.color : "rgba(255,255,255,0.1)", borderRadius: 2, transition: "all 0.3s", boxShadow: hov ? `0 0 14px ${p.color}` : "none", flexShrink: 0 }} />
+          <span style={{ fontFamily: "monospace", fontSize: 11, color: "rgba(255,255,255,0.3)" }}>{p.num}</span>
+        </div>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6, flexWrap: "wrap" }}>
+            <span style={{ fontSize: "1rem", fontWeight: 700, color: hov ? p.color : "#f0f0f8", transition: "color 0.3s", fontFamily: "'Syne', sans-serif" }}>{p.emoji} {p.name}</span>
+            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{p.type}</span>
+          </div>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0 }}>{p.desc}</p>
+        </div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
+          <a href={p.github} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: hov ? p.color : "rgba(255,255,255,0.4)", textDecoration: "none", border: `1px solid ${hov ? p.color : "rgba(255,255,255,0.12)"}`, padding: "5px 12px", borderRadius: 4, transition: "all 0.25s", letterSpacing: "0.05em", whiteSpace: "nowrap", boxShadow: hov ? `0 0 10px ${p.color}44` : "none" }}>↗ View</a>
+          {p.live && <a href={p.live} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#4ade80", textDecoration: "none", border: "1px solid rgba(74,222,128,0.3)", padding: "5px 12px", borderRadius: 4, whiteSpace: "nowrap" }}>⬢ Live</a>}
+        </div>
+      </div>
+    </TiltCard>
+  );
+}
+
+/* ─── MAIN APP ──────────────────────────────────────────────────────────── */
 export default function App() {
   const [scrolled, setScrolled] = useState(false);
-
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", fn);
+    window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
-
-  const scrollTo = (id) => {
-    const el = document.getElementById(id.toLowerCase());
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollTo = (id) => { const el = document.getElementById(id.toLowerCase()); if (el) el.scrollIntoView({ behavior: "smooth" }); };
 
   return (
     <div style={{ background: "#060810", color: "#e8e8f0", fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", overflowX: "hidden" }}>
-
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
+        * { cursor: none !important; }
         ::-webkit-scrollbar { width: 2px; }
-        ::-webkit-scrollbar-track { background: #060810; }
         ::-webkit-scrollbar-thumb { background: #6ee7f7; border-radius: 2px; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
         @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
-        @keyframes pulseGreen { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.4)} 50%{box-shadow:0 0 0 6px rgba(74,222,128,0)} }
+        @keyframes pulseGreen { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.4)} 50%{box-shadow:0 0 0 8px rgba(74,222,128,0)} }
+        @keyframes floatY { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-18px)} }
+        @keyframes glowPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         .syne { font-family: 'Syne', sans-serif !important; }
-        .nav-btn {
-          background: none; border: none; color: rgba(232,232,240,0.45);
-          font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
-          font-family: 'DM Sans', sans-serif; transition: color 0.2s; padding: 6px 0;
-          cursor: pointer;
-        }
-        .nav-btn:hover { color: #6ee7f7; }
-        .btn-cyan {
-          display: inline-flex; align-items: center; gap: 8px;
-          background: #6ee7f7; color: #060810; padding: 12px 26px;
-          border: none; border-radius: 4px; font-size: 11px; font-weight: 700;
-          letter-spacing: 0.12em; text-transform: uppercase; font-family: monospace;
-          text-decoration: none; transition: all 0.25s; cursor: pointer;
-        }
-        .btn-cyan:hover { background: #a5f3fc; transform: translateY(-2px); box-shadow: 0 10px 28px rgba(110,231,247,0.25); }
-        .btn-ghost {
-          display: inline-flex; align-items: center; gap: 8px;
-          background: transparent; color: rgba(232,232,240,0.65); padding: 11px 22px;
-          border: 1px solid rgba(232,232,240,0.15); border-radius: 4px; font-size: 11px;
-          letter-spacing: 0.12em; text-transform: uppercase; font-family: monospace;
-          text-decoration: none; transition: all 0.25s; cursor: pointer;
-        }
-        .btn-ghost:hover { border-color: #6ee7f7; color: #6ee7f7; transform: translateY(-2px); }
-        .btn-green {
-          display: inline-flex; align-items: center; gap: 8px;
-          background: transparent; color: #4ade80; padding: 11px 22px;
-          border: 1px solid rgba(74,222,128,0.3); border-radius: 4px; font-size: 11px;
-          letter-spacing: 0.12em; text-transform: uppercase; font-family: monospace;
-          text-decoration: none; transition: all 0.25s; cursor: pointer;
-        }
-        .btn-green:hover { background: rgba(74,222,128,0.07); border-color: #4ade80; transform: translateY(-2px); }
-        .stat-card {
-          border: 1px solid rgba(255,255,255,0.07); border-radius: 6px;
-          padding: 1.4rem 1rem; text-align: center;
-          background: rgba(255,255,255,0.02); transition: border-color 0.3s, transform 0.3s;
-        }
-        .stat-card:hover { border-color: rgba(110,231,247,0.3); transform: translateY(-4px); }
-        .skill-pill {
-          display: inline-block; border: 1px solid rgba(110,231,247,0.15);
-          color: rgba(232,232,240,0.5); padding: 4px 12px; border-radius: 3px;
-          font-size: 11px; margin: 3px; letter-spacing: 0.05em; font-family: monospace;
-          transition: all 0.2s;
-        }
-        .skill-pill:hover { border-color: #6ee7f7; color: #6ee7f7; background: rgba(110,231,247,0.05); }
-        .skill-cell { background: #060810; padding: 1.8rem; transition: background 0.3s; }
-        .skill-cell:hover { background: rgba(110,231,247,0.03); }
-        .cert-row {
-          display: flex; align-items: center; gap: 1.2rem;
-          padding: 1rem 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.05);
-          transition: background 0.2s;
-        }
-        .cert-row:last-child { border-bottom: none; }
-        .cert-row:hover { background: rgba(110,231,247,0.03); }
-        .exp-block {
-          border-left: 1px solid rgba(255,255,255,0.08); padding-left: 1.6rem;
-          margin-bottom: 2.2rem; position: relative;
-        }
-        .exp-block::before {
-          content: ''; position: absolute; left: -5px; top: 4px;
-          width: 8px; height: 8px; border-radius: 50%;
-          background: #6ee7f7; box-shadow: 0 0 10px rgba(110,231,247,0.5);
-        }
-        .section-label {
-          font-family: monospace; font-size: 10px; letter-spacing: 0.25em;
-          text-transform: uppercase; color: #6ee7f7; margin-bottom: 1rem;
-          display: flex; align-items: center; gap: 12px;
-        }
-        .section-label::after { content: ''; width: 40px; height: 1px; background: rgba(110,231,247,0.3); }
-        .social-link {
-          color: rgba(232,232,240,0.3); text-decoration: none; font-size: 9px;
-          letter-spacing: 0.15em; text-transform: uppercase; font-family: monospace;
-          writing-mode: vertical-rl; transition: color 0.25s;
-        }
-        .social-link:hover { color: #6ee7f7; }
-        @media (max-width: 768px) {
-          .nav-links { display: none !important; }
-          .side-socials { display: none !important; }
-          .hero-section { padding: 5rem 1.5rem 3rem !important; }
-          .about-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
-          .skills-grid { grid-template-columns: 1fr 1fr !important; }
-          .stats-grid { grid-template-columns: 1fr 1fr !important; }
-          .edu-grid { grid-template-columns: 1fr !important; gap: 2rem !important; }
-          section { padding: 4rem 1.5rem !important; }
-          nav { padding: 1rem 1.5rem !important; }
+        .nav-btn { background:none; border:none; color:rgba(232,232,240,0.45); font-size:11px; letter-spacing:0.15em; text-transform:uppercase; font-family:'DM Sans',sans-serif; transition:color 0.2s; padding:6px 0; cursor:none; }
+        .nav-btn:hover { color:#6ee7f7; }
+        .btn-cyan { display:inline-flex; align-items:center; gap:8px; background:#6ee7f7; color:#060810; padding:12px 26px; border:none; border-radius:4px; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; font-family:monospace; text-decoration:none; transition:all 0.25s; cursor:none; position:relative; overflow:hidden; }
+        .btn-cyan::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent); transform:translateX(-100%); transition:transform 0.5s; }
+        .btn-cyan:hover::before { transform:translateX(100%); }
+        .btn-cyan:hover { background:#a5f3fc; transform:translateY(-2px); box-shadow:0 10px 30px rgba(110,231,247,0.35), 0 0 20px rgba(110,231,247,0.2); }
+        .btn-ghost { display:inline-flex; align-items:center; gap:8px; background:transparent; color:rgba(232,232,240,0.65); padding:11px 22px; border:1px solid rgba(232,232,240,0.15); border-radius:4px; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; font-family:monospace; text-decoration:none; transition:all 0.25s; cursor:none; }
+        .btn-ghost:hover { border-color:#6ee7f7; color:#6ee7f7; transform:translateY(-2px); box-shadow:0 0 15px rgba(110,231,247,0.15); }
+        .btn-green { display:inline-flex; align-items:center; gap:8px; background:transparent; color:#4ade80; padding:11px 22px; border:1px solid rgba(74,222,128,0.3); border-radius:4px; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; font-family:monospace; text-decoration:none; transition:all 0.25s; cursor:none; }
+        .btn-green:hover { background:rgba(74,222,128,0.07); border-color:#4ade80; transform:translateY(-2px); box-shadow:0 0 15px rgba(74,222,128,0.2); }
+        .stat-card { border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:1.4rem 1rem; text-align:center; background:rgba(255,255,255,0.02); transition:all 0.3s; }
+        .stat-card:hover { border-color:rgba(110,231,247,0.4); transform:translateY(-6px); box-shadow:0 12px 40px rgba(110,231,247,0.1), 0 0 20px rgba(110,231,247,0.05); }
+        .skill-pill { display:inline-block; border:1px solid rgba(110,231,247,0.15); color:rgba(232,232,240,0.5); padding:4px 12px; border-radius:3px; font-size:11px; margin:3px; letter-spacing:0.05em; font-family:monospace; transition:all 0.2s; }
+        .skill-pill:hover { border-color:#6ee7f7; color:#6ee7f7; background:rgba(110,231,247,0.07); box-shadow:0 0 10px rgba(110,231,247,0.2); }
+        .skill-cell { background:#060810; padding:1.8rem; transition:background 0.3s; position:relative; overflow:hidden; }
+        .skill-cell::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(110,231,247,0.06), transparent 60%); opacity:0; transition:opacity 0.3s; pointer-events:none; }
+        .skill-cell:hover::after { opacity:1; }
+        .skill-cell:hover { background:rgba(110,231,247,0.03); }
+        .cert-row { display:flex; align-items:center; gap:1.2rem; padding:1rem 1.2rem; border-bottom:1px solid rgba(255,255,255,0.05); transition:all 0.25s; }
+        .cert-row:last-child { border-bottom:none; }
+        .cert-row:hover { background:rgba(110,231,247,0.04); padding-left:1.8rem; }
+        .exp-block { border-left:1px solid rgba(255,255,255,0.08); padding-left:1.6rem; margin-bottom:2.2rem; position:relative; }
+        .exp-block::before { content:''; position:absolute; left:-5px; top:4px; width:8px; height:8px; border-radius:50%; background:#6ee7f7; box-shadow:0 0 12px rgba(110,231,247,0.8); animation:glowPulse 2s ease infinite; }
+        .section-label { font-family:monospace; font-size:10px; letter-spacing:0.25em; text-transform:uppercase; color:#6ee7f7; margin-bottom:1rem; display:flex; align-items:center; gap:12px; }
+        .section-label::after { content:''; width:40px; height:1px; background:rgba(110,231,247,0.3); }
+        .social-link { color:rgba(232,232,240,0.3); text-decoration:none; font-size:9px; letter-spacing:0.15em; text-transform:uppercase; font-family:monospace; writing-mode:vertical-rl; transition:all 0.25s; cursor:none; }
+        .social-link:hover { color:#6ee7f7; text-shadow:0 0 10px rgba(110,231,247,0.6); }
+        @media (max-width:768px) {
+          .nav-links { display:none !important; }
+          .side-socials { display:none !important; }
+          .hero-section { padding:5rem 1.5rem 3rem !important; }
+          .about-grid { grid-template-columns:1fr !important; gap:2rem !important; }
+          .skills-grid { grid-template-columns:1fr 1fr !important; }
+          .stats-grid { grid-template-columns:1fr 1fr !important; }
+          .edu-grid { grid-template-columns:1fr !important; gap:2rem !important; }
+          section { padding:4rem 1.5rem !important; }
+          nav { padding:1rem 1.5rem !important; }
         }
       `}</style>
 
+      <CustomCursor />
+      <ParticleField />
+
+      {/* Ambient glow orbs */}
+      <div style={{ position: "fixed", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(110,231,247,0.04) 0%, transparent 70%)", pointerEvents: "none", zIndex: 1, animation: "floatY 8s ease infinite" }} />
+      <div style={{ position: "fixed", bottom: -200, left: -200, width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(165,243,192,0.03) 0%, transparent 70%)", pointerEvents: "none", zIndex: 1, animation: "floatY 11s ease infinite 2s" }} />
+
       {/* Side Socials */}
       <div className="side-socials" style={{ position: "fixed", left: 24, top: "50%", transform: "translateY(-50%)", zIndex: 50, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
-        <div style={{ width: 1, height: 50, background: "linear-gradient(transparent, rgba(110,231,247,0.2))" }} />
+        <div style={{ width: 1, height: 50, background: "linear-gradient(transparent, rgba(110,231,247,0.3))" }} />
         <a href="https://github.com/anandkundurthi" target="_blank" rel="noreferrer" className="social-link">GitHub</a>
         <a href="https://www.linkedin.com/in/anand-venkata-raghava-sai-kundurthi-75914a358/" target="_blank" rel="noreferrer" className="social-link">LinkedIn</a>
         <a href="mailto:anandsarmak@gmail.com" className="social-link">Email</a>
-        <div style={{ width: 1, height: 50, background: "linear-gradient(rgba(110,231,247,0.2), transparent)" }} />
+        <div style={{ width: 1, height: 50, background: "linear-gradient(rgba(110,231,247,0.3), transparent)" }} />
       </div>
 
       {/* NAV */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 100,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "1.2rem 4rem",
-        background: scrolled ? "rgba(6,8,16,0.94)" : "transparent",
-        backdropFilter: scrolled ? "blur(20px)" : "none",
-        borderBottom: `1px solid ${scrolled ? "rgba(255,255,255,0.06)" : "transparent"}`,
-        transition: "all 0.4s",
-      }}>
-        <span className="syne" style={{ fontWeight: 800, fontSize: "1.1rem", color: "#f0f0f8" }}>
-          AK<span style={{ color: "#6ee7f7" }}>.</span>
-        </span>
+      <nav style={{ position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.2rem 4rem", background: scrolled ? "rgba(6,8,16,0.92)" : "transparent", backdropFilter: scrolled ? "blur(24px)" : "none", borderBottom: `1px solid ${scrolled ? "rgba(110,231,247,0.08)" : "transparent"}`, transition: "all 0.4s", boxShadow: scrolled ? "0 4px 30px rgba(0,0,0,0.3)" : "none" }}>
+        <span className="syne" style={{ fontWeight: 800, fontSize: "1.1rem", color: "#f0f0f8", textShadow: "0 0 20px rgba(110,231,247,0.3)" }}>AK<span style={{ color: "#6ee7f7" }}>.</span></span>
         <div className="nav-links" style={{ display: "flex", gap: "2.2rem", alignItems: "center" }}>
           {["About","Skills","Projects","Education","Contact"].map(n => (
             <button key={n} className="nav-btn" onClick={() => scrollTo(n)}>{n}</button>
           ))}
-          <button className="btn-cyan" style={{ padding: "8px 18px", fontSize: 10 }} onClick={() => scrollTo("contact")}>
-            Hire Me
-          </button>
+          <button className="btn-cyan" style={{ padding: "8px 18px", fontSize: 10 }} onClick={() => scrollTo("contact")}>Hire Me</button>
         </div>
       </nav>
 
       {/* HERO */}
       <section id="about" className="hero-section" style={{ minHeight: "95vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "5rem 4rem 3rem", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", right: "7%", top: "12%", width: 320, height: 320, borderRadius: "50%", border: "1px solid rgba(110,231,247,0.05)", animation: "spin 40s linear infinite", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", right: "9.5%", top: "15.5%", width: 220, height: 220, borderRadius: "50%", border: "1px solid rgba(110,231,247,0.07)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", right: "12%", top: "19%", width: 120, height: 120, borderRadius: "50%", border: "1px solid rgba(110,231,247,0.1)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle,rgba(110,231,247,0.05) 0%,transparent 70%)", top: -120, right: -120, pointerEvents: "none" }} />
-        <div style={{ position: "absolute", width: 350, height: 350, borderRadius: "50%", background: "radial-gradient(circle,rgba(165,243,192,0.04) 0%,transparent 70%)", bottom: 0, left: "8%", pointerEvents: "none" }} />
+        <ThreeHero />
 
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: "2.5rem" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, border: "1px solid rgba(74,222,128,0.3)", borderRadius: 3, padding: "6px 14px", fontSize: 10, color: "#4ade80", letterSpacing: "0.1em", fontFamily: "monospace", textTransform: "uppercase" }}>
-              <div style={{ width: 6, height: 6, background: "#4ade80", borderRadius: "50%", animation: "pulseGreen 2s infinite" }} />
-              Available for Opportunities
+        {/* Parallax grid */}
+        <Parallax speed={0.05} style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }}>
+          <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(110,231,247,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(110,231,247,0.025) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
+        </Parallax>
+
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <Parallax speed={-0.07}>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: "2.5rem" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, border: "1px solid rgba(74,222,128,0.3)", borderRadius: 3, padding: "6px 14px", fontSize: 10, color: "#4ade80", letterSpacing: "0.1em", fontFamily: "monospace", textTransform: "uppercase", background: "rgba(74,222,128,0.04)" }}>
+                <div style={{ width: 6, height: 6, background: "#4ade80", borderRadius: "50%", animation: "pulseGreen 2s infinite" }} />
+                Available for Opportunities
+              </div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, border: "1px solid rgba(255,255,255,0.08)", borderRadius: 3, padding: "6px 14px", fontSize: 10, color: "rgba(232,232,240,0.4)", fontFamily: "monospace", background: "rgba(255,255,255,0.02)" }}>
+                <Clock />
+              </div>
             </div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, border: "1px solid rgba(255,255,255,0.08)", borderRadius: 3, padding: "6px 14px", fontSize: 10, color: "rgba(232,232,240,0.4)", fontFamily: "monospace" }}>
-              <Clock />
+            <div style={{ fontSize: 11, color: "rgba(110,231,247,0.6)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "0.7rem", fontFamily: "monospace" }}>Hello, I'm</div>
+            <h1 className="syne" style={{ fontSize: "clamp(3.5rem,9vw,8.5rem)", fontWeight: 800, lineHeight: 0.9, letterSpacing: "-0.04em", marginBottom: "1.4rem", color: "#f0f0f8", textShadow: "0 0 40px rgba(110,231,247,0.15)" }}>
+              Anand<br />
+              <span style={{ background: "linear-gradient(135deg, #6ee7f7 0%, #a5f3fc 40%, #6ee7f7 70%, #a5f3c0 100%)", backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "shimmer 4s linear infinite" }}>Kundurthi</span>
+            </h1>
+            <div className="syne" style={{ fontSize: "clamp(1rem,2.5vw,1.5rem)", fontWeight: 600, margin: "0 0 1.4rem", minHeight: "2rem", color: "rgba(232,232,240,0.65)" }}><TypingText /></div>
+            <p style={{ fontSize: "clamp(0.88rem,1.5vw,1rem)", color: "rgba(232,232,240,0.42)", maxWidth: 520, lineHeight: 1.9, marginBottom: "2.8rem" }}>
+              Full-Stack Developer with experience building scalable web applications using Python, FastAPI, React.js, and Node.js. Skilled in designing REST APIs, optimizing SQL queries, and delivering end-to-end product features.
+            </p>
+            <div style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap" }}>
+              <button className="btn-cyan" onClick={() => scrollTo("projects")}>View Projects</button>
+              <a href="https://ai-resume-analyzer-tuet.onrender.com" target="_blank" rel="noreferrer" className="btn-ghost">Live Project</a>
+              <a href="https://drive.google.com/file/d/1PEuAK9LEg8flKRgUPYbi0wOdSpA7Qx7U/view" target="_blank" rel="noreferrer" className="btn-green">Resume</a>
+              <button className="btn-ghost" onClick={() => scrollTo("contact")}>Say Hello</button>
             </div>
-          </div>
+          </Parallax>
+        </div>
 
-          <div style={{ fontSize: 11, color: "rgba(110,231,247,0.6)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "0.7rem", fontFamily: "monospace" }}>
-            Hello, I'm
-          </div>
-
-          <h1 className="syne" style={{ fontSize: "clamp(3.5rem,9vw,8.5rem)", fontWeight: 800, lineHeight: 0.9, letterSpacing: "-0.04em", marginBottom: "1.4rem", color: "#f0f0f8" }}>
-            Anand<br />
-            <span style={{
-              background: "linear-gradient(135deg, #6ee7f7 0%, #a5f3fc 40%, #6ee7f7 70%, #a5f3c0 100%)",
-              backgroundSize: "200% auto",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              animation: "shimmer 4s linear infinite",
-            }}>Kundurthi</span>
-          </h1>
-
-          <div className="syne" style={{ fontSize: "clamp(1rem,2.5vw,1.5rem)", fontWeight: 600, margin: "0 0 1.4rem", minHeight: "2rem", color: "rgba(232,232,240,0.65)" }}>
-            <TypingText />
-          </div>
-
-          <p style={{ fontSize: "clamp(0.88rem,1.5vw,1rem)", color: "rgba(232,232,240,0.42)", maxWidth: 520, lineHeight: 1.9, marginBottom: "2.8rem" }}>
-            Full-Stack Developer with experience building scalable web applications using Python, FastAPI, React.js, and Node.js. Skilled in designing REST APIs, optimizing SQL queries, and delivering end-to-end product features.
-          </p>
-
-          <div style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap" }}>
-            <button className="btn-cyan" onClick={() => scrollTo("projects")}>View Projects</button>
-            <a href="https://ai-resume-analyzer-tuet.onrender.com" target="_blank" rel="noreferrer" className="btn-ghost">Live Project</a>
-            <a href="https://drive.google.com/file/d/1PEuAK9LEg8flKRgUPYbi0wOdSpA7Qx7U/view" target="_blank" rel="noreferrer" className="btn-green">Resume</a>
-            <button className="btn-ghost" onClick={() => scrollTo("contact")}>Say Hello</button>
-          </div>
+        <div style={{ position: "absolute", bottom: 40, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 8, zIndex: 2 }}>
+          <span style={{ fontFamily: "monospace", fontSize: 9, color: "rgba(110,231,247,0.4)", letterSpacing: "0.2em", textTransform: "uppercase" }}>scroll</span>
+          <div style={{ width: 1, height: 40, background: "linear-gradient(#6ee7f7, transparent)", animation: "glowPulse 1.5s ease infinite" }} />
         </div>
       </section>
 
       {/* MARQUEE */}
-      <div style={{ overflow: "hidden", padding: "0.8rem 0", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)", background: "rgba(110,231,247,0.015)" }}>
+      <div style={{ overflow: "hidden", padding: "0.9rem 0", borderTop: "1px solid rgba(110,231,247,0.07)", borderBottom: "1px solid rgba(110,231,247,0.07)", background: "rgba(110,231,247,0.012)", position: "relative", zIndex: 2 }}>
         <div style={{ display: "flex", gap: "3rem", width: "max-content", animation: "marquee 26s linear infinite" }}>
           {["Python","React.js","FastAPI","Figma","SQL","Node.js","MERN","JavaScript","Express.js","MongoDB","Python","React.js","FastAPI","Figma","SQL","Node.js","MERN","JavaScript","Express.js","MongoDB"].map((t, i) => (
             <span key={i} style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(232,232,240,0.22)", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "1.5rem", fontFamily: "monospace" }}>
@@ -405,30 +481,25 @@ export default function App() {
       </div>
 
       {/* ABOUT */}
-      <section style={{ padding: "7rem 4rem" }}>
+      <section style={{ padding: "7rem 4rem", position: "relative", zIndex: 2 }}>
         <div className="section-label">About Me</div>
         <div className="about-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6rem", alignItems: "start" }}>
           <Reveal>
-            <h2 className="syne" style={{ fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: "1.6rem", color: "#f0f0f8" }}>
-              Turning ideas<br />into reality.
-            </h2>
+            <h2 className="syne" style={{ fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: "1.6rem", color: "#f0f0f8" }}>Turning ideas<br />into reality.</h2>
             <p style={{ fontSize: "0.93rem", color: "rgba(232,232,240,0.48)", lineHeight: 2, marginBottom: "2.4rem" }}>
               I'm <strong style={{ color: "#f0f0f8", fontWeight: 500 }}>Anand Venkata Raghava Sai Kundurthi</strong> from <strong style={{ color: "#f0f0f8", fontWeight: 500 }}>Nuzvid, Andhra Pradesh</strong>. I bridge the gap between clean backend architecture and pixel-perfect frontend experiences.
               <br /><br />
-              With hands-on <strong style={{ color: "#6ee7f7", fontWeight: 500 }}>Full-Stack experience</strong> building and deploying real projects, UI/UX work at <strong style={{ color: "#f0f0f8", fontWeight: 500 }}>Diigoo Tech</strong>, and intensive training at <strong style={{ color: "#f0f0f8", fontWeight: 500 }}>NxtWave CCBP 4.0</strong>, I build end-to-end — from system design to deployment.
+              With hands-on <strong style={{ color: "#6ee7f7", fontWeight: 500 }}>Full-Stack experience</strong> at <strong style={{ color: "#f0f0f8", fontWeight: 500 }}>Diigoo Tech</strong> and intensive training at <strong style={{ color: "#f0f0f8", fontWeight: 500 }}>NxtWave CCBP 4.0</strong>, I build end-to-end — from system design to deployment.
             </p>
             <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.8rem" }}>
               {STATS.map(s => (
                 <div key={s.label} className="stat-card">
-                  <div className="syne" style={{ fontSize: "2rem", fontWeight: 800, color: "#6ee7f7", lineHeight: 1, marginBottom: 6 }}>
-                    <Counter target={s.n} suffix={s.suffix} />
-                  </div>
+                  <div className="syne" style={{ fontSize: "2rem", fontWeight: 800, color: "#6ee7f7", lineHeight: 1, marginBottom: 6, textShadow: "0 0 20px rgba(110,231,247,0.4)" }}><Counter target={s.n} suffix={s.suffix} /></div>
                   <div style={{ fontSize: 10, color: "rgba(232,232,240,0.32)", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "monospace" }}>{s.label}</div>
                 </div>
               ))}
             </div>
           </Reveal>
-
           <Reveal delay={0.12}>
             <div className="section-label" style={{ marginBottom: "1.6rem" }}>Experience</div>
             <div className="exp-block">
@@ -436,15 +507,9 @@ export default function App() {
               <div className="syne" style={{ fontWeight: 700, fontSize: "0.93rem", marginBottom: 3, color: "#f0f0f8" }}>UI/UX Developer Intern (Full-Stack)</div>
               <div style={{ fontSize: 11, color: "rgba(110,231,247,0.5)", marginBottom: 9, fontFamily: "monospace" }}>Diigoo Tech Private Limited · Hyderabad</div>
               <ul style={{ paddingLeft: 0, listStyle: "none" }}>
-                {[
-                  "Developed responsive React.js interfaces, reducing unnecessary re-renders via memoization and optimized component structure.",
-                  "Designed Figma wireframes and interactive prototypes translating business requirements into user-focused solutions.",
-                  "Conducted usability testing with stakeholders to identify UX bottlenecks and improve task completion flows.",
-                  "Integrated REST APIs with frontend components ensuring accurate data rendering and state management.",
-                ].map((pt, i) => (
+                {["Developed responsive React.js interfaces, reducing re-renders via memoization and optimized component structure.", "Designed Figma wireframes and interactive prototypes translating business requirements into user-focused solutions.", "Conducted usability testing with stakeholders to identify UX bottlenecks and improve task completion flows.", "Integrated REST APIs with frontend components ensuring accurate data rendering and state management."].map((pt, i) => (
                   <li key={i} style={{ fontSize: 12, color: "rgba(232,232,240,0.43)", lineHeight: 1.8, marginBottom: 6, paddingLeft: 14, position: "relative" }}>
-                    <span style={{ position: "absolute", left: 0, color: "#6ee7f7" }}>›</span>
-                    {pt}
+                    <span style={{ position: "absolute", left: 0, color: "#6ee7f7" }}>›</span>{pt}
                   </li>
                 ))}
               </ul>
@@ -460,17 +525,17 @@ export default function App() {
       </section>
 
       {/* SKILLS */}
-      <section id="skills" style={{ padding: "7rem 4rem", background: "rgba(255,255,255,0.012)", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+      <section id="skills" style={{ padding: "7rem 4rem", background: "rgba(255,255,255,0.012)", borderTop: "1px solid rgba(110,231,247,0.06)", borderBottom: "1px solid rgba(110,231,247,0.06)", position: "relative", zIndex: 2 }}>
         <div className="section-label">Skills</div>
         <Reveal>
           <h2 className="syne" style={{ fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "0.7rem", color: "#f0f0f8" }}>What I Bring</h2>
           <p style={{ color: "rgba(232,232,240,0.38)", fontSize: "0.92rem", marginBottom: "3rem" }}>From building APIs to designing pixel-perfect interfaces.</p>
         </Reveal>
-        <div className="skills-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1px", background: "rgba(255,255,255,0.05)" }}>
+        <div className="skills-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1px", background: "rgba(110,231,247,0.06)" }}>
           {skills.map((s, i) => (
             <Reveal key={s.name} delay={i * 0.06}>
-              <div className="skill-cell">
-                <div style={{ fontSize: "1.3rem", marginBottom: "0.9rem", color: "#6ee7f7" }}>{s.icon}</div>
+              <div className="skill-cell" onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`); e.currentTarget.style.setProperty("--my", `${((e.clientY - r.top) / r.height) * 100}%`); }}>
+                <div style={{ fontSize: "1.4rem", marginBottom: "0.9rem", color: "#6ee7f7", filter: "drop-shadow(0 0 8px rgba(110,231,247,0.6))" }}>{s.icon}</div>
                 <div className="syne" style={{ fontWeight: 700, fontSize: "0.93rem", marginBottom: "0.9rem", color: "#f0f0f8" }}>{s.name}</div>
                 <div>{s.tags.map(t => <span key={t} className="skill-pill">{t}</span>)}</div>
               </div>
@@ -480,38 +545,29 @@ export default function App() {
       </section>
 
       {/* PROJECTS */}
-      <section id="projects" style={{ padding: "7rem 4rem" }}>
+      <section id="projects" style={{ padding: "7rem 4rem", position: "relative", zIndex: 2 }}>
         <div className="section-label">My Work</div>
         <Reveal>
           <h2 className="syne" style={{ fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "0.7rem", color: "#f0f0f8" }}>Featured Projects</h2>
           <p style={{ color: "rgba(232,232,240,0.38)", fontSize: "0.92rem", marginBottom: "2.5rem" }}>Real code I have written and shipped.</p>
         </Reveal>
-        <div style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, overflow: "hidden" }}>
-          {projects.map((p, i) => (
-            <Reveal key={p.name} delay={i * 0.07}>
-              <ProjectRow p={p} />
-            </Reveal>
-          ))}
+        <div style={{ border: "1px solid rgba(110,231,247,0.08)", borderRadius: 10, overflow: "hidden" }}>
+          {projects.map((p, i) => (<Reveal key={p.name} delay={i * 0.07}><ProjectRow p={p} /></Reveal>))}
         </div>
       </section>
 
       {/* EDUCATION */}
-      <section id="education" style={{ padding: "7rem 4rem", background: "rgba(255,255,255,0.012)", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+      <section id="education" style={{ padding: "7rem 4rem", background: "rgba(255,255,255,0.012)", borderTop: "1px solid rgba(110,231,247,0.06)", borderBottom: "1px solid rgba(110,231,247,0.06)", position: "relative", zIndex: 2 }}>
         <div className="section-label">Background</div>
-        <Reveal>
-          <h2 className="syne" style={{ fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "3rem", color: "#f0f0f8" }}>Education & Certifications</h2>
-        </Reveal>
+        <Reveal><h2 className="syne" style={{ fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "3rem", color: "#f0f0f8" }}>Education & Certifications</h2></Reveal>
         <div className="edu-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5rem" }}>
           <Reveal>
             <div style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(232,232,240,0.28)", marginBottom: "1.8rem", fontFamily: "monospace" }}>Academic</div>
-            {[
-              { year: "Feb 2025 – Nov 2026", inst: "NxtWave CCBP 4.0 Intensive Fellowship", deg: "Full-Stack Development (Pursuing) · Remote", color: "#6ee7f7" },
-              { year: "2018 – 2021", inst: "Krishna University, Machilipatnam", deg: "Bachelor of Commerce (Computers) · Andhra Pradesh", color: "#a5f3c0" },
-            ].map((e, i) => (
+            {[{ year: "Feb 2025 – Nov 2026", inst: "NxtWave CCBP 4.0 Intensive Fellowship", deg: "Full-Stack Development (Pursuing) · Remote", color: "#6ee7f7" }, { year: "2018 – 2021", inst: "Krishna University, Machilipatnam", deg: "Bachelor of Commerce (Computers) · Andhra Pradesh", color: "#a5f3c0" }].map((e, i) => (
               <div key={i} style={{ display: "flex", gap: "1.4rem", marginBottom: "2.2rem" }}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-                  <div style={{ width: 10, height: 10, background: e.color, borderRadius: "50%", marginTop: 3, boxShadow: `0 0 10px ${e.color}55` }} />
-                  {i === 0 && <div style={{ width: 1, height: 46, background: "linear-gradient(rgba(110,231,247,0.2),transparent)", marginTop: 5 }} />}
+                  <div style={{ width: 10, height: 10, background: e.color, borderRadius: "50%", marginTop: 3, boxShadow: `0 0 14px ${e.color}` }} />
+                  {i === 0 && <div style={{ width: 1, height: 46, background: "linear-gradient(rgba(110,231,247,0.3),transparent)", marginTop: 5 }} />}
                 </div>
                 <div>
                   <div style={{ fontSize: 10, color: e.color, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 5, fontFamily: "monospace" }}>{e.year}</div>
@@ -521,13 +577,12 @@ export default function App() {
               </div>
             ))}
           </Reveal>
-
           <Reveal delay={0.1}>
             <div style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(232,232,240,0.28)", marginBottom: "1.8rem", fontFamily: "monospace" }}>Certifications</div>
-            <div style={{ border: "1px solid rgba(255,255,255,0.06)", borderRadius: 6, overflow: "hidden" }}>
+            <div style={{ border: "1px solid rgba(110,231,247,0.08)", borderRadius: 8, overflow: "hidden" }}>
               {certs.map(c => (
                 <div key={c.num} className="cert-row">
-                  <span style={{ fontSize: 11, color: "#6ee7f7", minWidth: 26, opacity: 0.55, fontFamily: "monospace" }}>{c.num}</span>
+                  <span style={{ fontSize: 11, color: "#6ee7f7", minWidth: 26, opacity: 0.6, fontFamily: "monospace", textShadow: "0 0 8px rgba(110,231,247,0.5)" }}>{c.num}</span>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 500, color: "#f0f0f8", marginBottom: 2 }}>{c.name}</div>
                     <div style={{ fontSize: 10, color: "rgba(232,232,240,0.32)", fontFamily: "monospace", letterSpacing: "0.05em" }}>{c.by}</div>
@@ -540,18 +595,17 @@ export default function App() {
       </section>
 
       {/* CONTACT */}
-      <section id="contact" style={{ padding: "7rem 4rem", textAlign: "center", position: "relative" }}>
-        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle,rgba(110,231,247,0.04) 0%,transparent 70%)", pointerEvents: "none" }} />
+      <section id="contact" style={{ padding: "7rem 4rem", textAlign: "center", position: "relative", zIndex: 2 }}>
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle,rgba(110,231,247,0.05) 0%,transparent 70%)", pointerEvents: "none", animation: "floatY 6s ease infinite" }} />
         <Reveal>
           <div style={{ maxWidth: 600, margin: "0 auto", position: "relative" }}>
             <div className="section-label" style={{ justifyContent: "center" }}>Contact</div>
             <h2 className="syne" style={{ fontSize: "clamp(2rem,5vw,3.8rem)", fontWeight: 800, letterSpacing: "-0.04em", marginBottom: "1rem", color: "#f0f0f8", lineHeight: 1.05 }}>
               Let's build something<br />
-              <span style={{ color: "#6ee7f7" }}>great together.</span>
+              <span style={{ color: "#6ee7f7", textShadow: "0 0 30px rgba(110,231,247,0.4)" }}>great together.</span>
             </h2>
             <p style={{ color: "rgba(232,232,240,0.38)", fontSize: "0.9rem", lineHeight: 1.9, marginBottom: "2.8rem" }}>
-              Open to Full-Stack, Backend, and Frontend Developer roles.<br />
-              Also open to internships, collaborations, and creative challenges.
+              Open to Full-Stack, Backend, and Frontend Developer roles.<br />Also open to internships, collaborations, and creative challenges.
             </p>
             <div style={{ display: "flex", gap: "0.8rem", justifyContent: "center", flexWrap: "wrap", marginBottom: "1.8rem" }}>
               <a href="mailto:anandsarmak@gmail.com" className="btn-cyan">Send Email</a>
@@ -565,13 +619,11 @@ export default function App() {
         </Reveal>
       </section>
 
-      {/* FOOTER */}
-      <footer style={{ textAlign: "center", padding: "1.5rem 4rem", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+      <footer style={{ textAlign: "center", padding: "1.5rem 4rem", borderTop: "1px solid rgba(110,231,247,0.06)", position: "relative", zIndex: 2 }}>
         <span style={{ fontSize: 10, color: "rgba(232,232,240,0.18)", fontFamily: "monospace", letterSpacing: "0.1em" }}>
           Crafted with curiosity, coffee, and way too many open tabs · 2025 Anand Kundurthi
         </span>
       </footer>
-
     </div>
   );
 }
