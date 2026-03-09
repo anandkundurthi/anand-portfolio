@@ -515,7 +515,7 @@ export default function App() {
               </ul>
             </div>
             <div className="exp-block">
-              <div style={{ fontSize: 10, color: "#a5f3c0", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 7, fontFamily: "monospace" }}>Feb 2025 – Nov 2026</div>
+              <div style={{ fontSize: 10, color: "#a5f3c0", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 7, fontFamily: "monospace" }}>Feb 2025 – Ongoing</div>
               <div className="syne" style={{ fontWeight: 700, fontSize: "0.93rem", marginBottom: 3, color: "#f0f0f8" }}>CCBP 4.0 Fellow — Full-Stack Development</div>
               <div style={{ fontSize: 11, color: "rgba(165,243,192,0.5)", marginBottom: 9, fontFamily: "monospace" }}>NxtWave · Remote</div>
               <p style={{ fontSize: 12, color: "rgba(232,232,240,0.43)", lineHeight: 1.8 }}>Python · DSA · React.js · Node.js · SQL · REST APIs · Linux · System Design</p>
@@ -563,7 +563,7 @@ export default function App() {
         <div className="edu-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5rem" }}>
           <Reveal>
             <div style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(232,232,240,0.28)", marginBottom: "1.8rem", fontFamily: "monospace" }}>Academic</div>
-            {[{ year: "Feb 2025 – Nov 2026", inst: "NxtWave CCBP 4.0 Intensive Fellowship", deg: "Full-Stack Development (Pursuing) · Remote", color: "#6ee7f7" }, { year: "2018 – 2021", inst: "Krishna University, Machilipatnam", deg: "Bachelor of Commerce (Computers) · Andhra Pradesh", color: "#a5f3c0" }].map((e, i) => (
+            {[{ year: "Feb 2025 – Ongoing", inst: "NxtWave CCBP 4.0 Intensive Fellowship", deg: "Full-Stack Development (Pursuing) · Remote", color: "#6ee7f7" }, { year: "2018 – 2021", inst: "Krishna University, Machilipatnam", deg: "Bachelor of Commerce (Computers) · Andhra Pradesh", color: "#a5f3c0" }].map((e, i) => (
               <div key={i} style={{ display: "flex", gap: "1.4rem", marginBottom: "2.2rem" }}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
                   <div style={{ width: 10, height: 10, background: e.color, borderRadius: "50%", marginTop: 3, boxShadow: `0 0 14px ${e.color}` }} />
