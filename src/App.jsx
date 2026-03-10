@@ -14,12 +14,12 @@ const projects = [
 ];
 
 const skills = [
-  { icon: "⬡", name: "Languages", tags: ["Python", "JavaScript ES6+", "SQL", "HTML5", "CSS3"] },
-  { icon: "◈", name: "Frontend", tags: ["React.js", "Responsive Design", "Component Architecture", "Jinja2"] },
-  { icon: "⬢", name: "Backend", tags: ["FastAPI", "Node.js", "Express.js", "REST APIs", "JWT Auth", "Session Mgmt"] },
-  { icon: "◉", name: "Databases", tags: ["PostgreSQL", "MySQL", "MongoDB", "SQLite", "SQLAlchemy ORM"] },
-  { icon: "⬣", name: "Tools & Platforms", tags: ["Git", "GitHub", "Linux", "Render", "Figma", "Canva", "PyPDF2"] },
-  { icon: "◈", name: "Core Concepts", tags: ["DSA", "System Design", "UI/UX Design", "Agile", "REST APIs"] },
+  { icon: "⬡", name: "Languages", tags: ["Python", "JavaScript ES6+", "SQL", "HTML5", "CSS3"], bars: [{ name: "Python", pct: 88 }, { name: "JavaScript", pct: 82 }, { name: "SQL", pct: 78 }, { name: "HTML/CSS", pct: 90 }] },
+  { icon: "◈", name: "Frontend", tags: ["React.js", "Responsive Design", "Component Architecture", "Jinja2"], bars: [{ name: "React.js", pct: 85 }, { name: "Responsive UI", pct: 88 }, { name: "Jinja2", pct: 72 }] },
+  { icon: "⬢", name: "Backend", tags: ["FastAPI", "Node.js", "Express.js", "REST APIs", "JWT Auth", "Session Mgmt"], bars: [{ name: "FastAPI", pct: 83 }, { name: "Node.js", pct: 76 }, { name: "REST APIs", pct: 87 }] },
+  { icon: "◉", name: "Databases", tags: ["PostgreSQL", "MySQL", "MongoDB", "SQLite", "SQLAlchemy ORM"], bars: [{ name: "PostgreSQL", pct: 80 }, { name: "MySQL", pct: 82 }, { name: "MongoDB", pct: 70 }] },
+  { icon: "⬣", name: "Tools & Platforms", tags: ["Git", "GitHub", "Linux", "Render", "Figma", "Canva", "PyPDF2"], bars: [{ name: "Git/GitHub", pct: 85 }, { name: "Figma", pct: 75 }, { name: "Linux", pct: 70 }] },
+  { icon: "◈", name: "Core Concepts", tags: ["DSA", "System Design", "UI/UX Design", "Agile", "REST APIs"], bars: [{ name: "DSA", pct: 72 }, { name: "UI/UX Design", pct: 78 }, { name: "System Design", pct: 68 }] },
 ];
 
 const certs = [
@@ -422,6 +422,88 @@ function ProjectRow({ p }) {
 }
 
 /* ─── MAIN APP ──────────────────────────────────────────────────────────── */
+
+/* ─── THEME CONTEXT ─────────────────────────────────────────────────────── */
+const ThemeCtx = window._ThemeCtx || (() => { const ctx = { _val: "dark", _listeners: [] }; window._ThemeCtx = ctx; return ctx; })();
+
+/* ─── MOBILE NAV ────────────────────────────────────────────────────────── */
+function MobileNav({ scrollTo, theme }) {
+  const [open, setOpen] = useState(false);
+  const bg = theme === "light" ? "#f8f9fc" : "#060810";
+  const fg = theme === "light" ? "#1a1a2e" : "#e8e8f0";
+  const border = theme === "light" ? "rgba(0,0,0,0.08)" : "rgba(110,231,247,0.08)";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <button onClick={() => setOpen(!open)} style={{ background: "none", border: `1px solid ${border}`, borderRadius: 6, padding: "8px 10px", cursor: "none", display: "flex", flexDirection: "column", gap: 4, transition: "border-color 0.2s" }}>
+        {[0,1,2].map(i => (
+          <div key={i} style={{ width: open ? (i === 1 ? 0 : 20) : 20, height: 1.5, background: "#6ee7f7", borderRadius: 2, transition: "all 0.3s", transform: open ? (i === 0 ? "rotate(45deg) translate(4px, 4px)" : i === 2 ? "rotate(-45deg) translate(4px, -4px)" : "none") : "none", opacity: open && i === 1 ? 0 : 1 }} />
+        ))}
+      </button>
+      {open && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: bg, zIndex: 98, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2rem" }}>
+          {["About","Skills","Projects","Education","Contact"].map(n => (
+            <button key={n} onClick={() => { scrollTo(n); setOpen(false); }} style={{ background: "none", border: "none", color: fg, fontSize: "2rem", fontFamily: "'Syne', sans-serif", fontWeight: 800, letterSpacing: "-0.03em", cursor: "none", transition: "color 0.2s" }}
+              onMouseEnter={e => e.target.style.color = "#6ee7f7"} onMouseLeave={e => e.target.style.color = fg}>
+              {n}
+            </button>
+          ))}
+          <button className="btn-cyan" onClick={() => { scrollTo("contact"); setOpen(false); }}>Hire Me</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── SKILL BAR ─────────────────────────────────────────────────────────── */
+function SkillBar({ name, pct, delay = 0, theme }) {
+  const [width, setWidth] = useState(0);
+  const ref = useRef(null);
+  const started = useRef(false);
+  const barColor = theme === "light" ? "#0891b2" : "#6ee7f7";
+  const textColor = theme === "light" ? "#374151" : "rgba(232,232,240,0.6)";
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !started.current) {
+        started.current = true;
+        setTimeout(() => setWidth(pct), delay * 1000);
+      }
+    }, { threshold: 0.3 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [pct, delay]);
+  return (
+    <div ref={ref} style={{ marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+        <span style={{ fontSize: 11, color: textColor, fontFamily: "monospace", letterSpacing: "0.05em" }}>{name}</span>
+        <span style={{ fontSize: 10, color: barColor, fontFamily: "monospace" }}>{width > 0 ? pct + "%" : "0%"}</span>
+      </div>
+      <div style={{ height: 3, background: theme === "light" ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: width + "%", background: `linear-gradient(90deg, ${barColor}, ${theme === "light" ? "#06b6d4" : "#a5f3c0"})`, borderRadius: 2, transition: "width 1.2s cubic-bezier(0.22,1,0.36,1)", boxShadow: width > 0 ? `0 0 8px ${barColor}60` : "none" }} />
+      </div>
+    </div>
+  );
+}
+
+/* ─── SECTION TRANSITION ────────────────────────────────────────────────── */
+function SectionReveal({ children, delay = 0 }) {
+  const ref = useRef(null);
+  const [vis, setVis] = useState(false);
+  const [entered, setEntered] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !entered) { setVis(true); setEntered(true); }
+      else if (!e.isIntersecting && entered) { setVis(false); }
+    }, { threshold: 0.06 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [entered]);
+  return (
+    <div ref={ref} style={{ opacity: vis ? 1 : 0, transform: vis ? "translateY(0) scale(1)" : "translateY(40px) scale(0.98)", transition: `opacity 0.9s ${delay}s cubic-bezier(0.22,1,0.36,1), transform 0.9s ${delay}s cubic-bezier(0.22,1,0.36,1)` }}>
+      {children}
+    </div>
+  );
+}
+
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -433,7 +515,7 @@ export default function App() {
   const scrollTo = (id) => { const el = document.getElementById(id.toLowerCase()); if (el) el.scrollIntoView({ behavior: "smooth" }); };
 
   return (
-    <div style={{ background: "#060810", color: "#e8e8f0", fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", overflowX: "hidden" }}>
+    <div style={{ background: bg, color: fg, fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", overflowX: "hidden", transition: "background 0.4s, color 0.4s" }}>
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
@@ -509,17 +591,28 @@ export default function App() {
       </div>
 
       {/* NAV */}
-      <nav style={{ position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.2rem 4rem", background: scrolled ? "rgba(6,8,16,0.92)" : "transparent", backdropFilter: scrolled ? "blur(24px)" : "none", borderBottom: `1px solid ${scrolled ? "rgba(110,231,247,0.08)" : "transparent"}`, transition: "all 0.4s", boxShadow: scrolled ? "0 4px 30px rgba(0,0,0,0.3)" : "none" }}>
+      <nav style={{ position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.2rem 4rem", background: scrolled ? (isDark ? "rgba(6,8,16,0.92)" : "rgba(240,244,248,0.92)") : "transparent", backdropFilter: scrolled ? "blur(24px)" : "none", borderBottom: `1px solid ${scrolled ? borderCol : "transparent"}`, transition: "all 0.4s", boxShadow: scrolled ? (isDark ? "0 4px 30px rgba(0,0,0,0.3)" : "0 4px 30px rgba(0,0,0,0.08)") : "none" }}>
         <span className="syne" style={{ fontWeight: 800, fontSize: "1.1rem", color: "#f0f0f8", textShadow: "0 0 20px rgba(110,231,247,0.3)" }}>AK<span style={{ color: "#6ee7f7" }}>.</span></span>
-        <div className="nav-links" style={{ display: "flex", gap: "2.2rem", alignItems: "center" }}>
-          {["About","Skills","Projects","Education","Contact"].map(n => (
-            <button key={n} className="nav-btn" onClick={() => scrollTo(n)}>{n}</button>
-          ))}
-          <button className="btn-cyan" style={{ padding: "8px 18px", fontSize: 10 }} onClick={() => scrollTo("contact")}>Hire Me</button>
+        <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+          <div className="nav-links" style={{ display: "flex", gap: "2.2rem", alignItems: "center" }}>
+            {["About","Skills","Projects","Education","Contact"].map(n => (
+              <button key={n} className="nav-btn" style={{ color: isDark ? "rgba(232,232,240,0.45)" : "rgba(26,26,46,0.55)" }} onClick={() => scrollTo(n)}>{n}</button>
+            ))}
+            <button className="btn-cyan" style={{ padding: "8px 18px", fontSize: 10 }} onClick={() => scrollTo("contact")}>Hire Me</button>
+          </div>
+          {/* Theme Toggle */}
+          <button onClick={toggleTheme} style={{ background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.05)", border: `1px solid ${borderCol}`, borderRadius: 20, padding: "6px 12px", cursor: "none", display: "flex", alignItems: "center", gap: 6, transition: "all 0.3s", color: isDark ? "#6ee7f7" : "#0891b2", fontSize: 14 }}>
+            {isDark ? "☀️" : "🌙"}
+          </button>
+          {/* Mobile Menu */}
+          <div className="mobile-menu-btn">
+            <MobileNav scrollTo={scrollTo} theme={theme} />
+          </div>
         </div>
       </nav>
 
       {/* HERO */}
+      <SectionReveal delay={0}>
       <section id="about" className="hero-section" style={{ minHeight: "95vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "5rem 4rem 3rem", position: "relative", overflow: "hidden" }}>
         <ThreeHero />
         <Parallax speed={0.05} style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }}>
@@ -569,6 +662,7 @@ export default function App() {
           <div style={{ width: 1, height: 40, background: "linear-gradient(#6ee7f7, transparent)", animation: "glowPulse 1.5s ease infinite" }} />
         </div>
       </section>
+      </SectionReveal>
 
       {/* MARQUEE */}
       <div style={{ overflow: "hidden", padding: "0.9rem 0", borderTop: "1px solid rgba(110,231,247,0.07)", borderBottom: "1px solid rgba(110,231,247,0.07)", background: "rgba(110,231,247,0.012)", position: "relative", zIndex: 2 }}>
@@ -626,6 +720,7 @@ export default function App() {
       </section>
 
       {/* SKILLS */}
+      <SectionReveal delay={0}>
       <section id="skills" style={{ padding: "7rem 4rem", background: "rgba(255,255,255,0.012)", borderTop: "1px solid rgba(110,231,247,0.06)", borderBottom: "1px solid rgba(110,231,247,0.06)", position: "relative", zIndex: 2 }}>
         <div className="section-label">Skills</div>
         <Reveal>
@@ -635,17 +730,20 @@ export default function App() {
         <div className="skills-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1px", background: "rgba(110,231,247,0.06)" }}>
           {skills.map((s, i) => (
             <Reveal key={s.name} delay={i * 0.06}>
-              <div className="skill-cell" onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`); e.currentTarget.style.setProperty("--my", `${((e.clientY - r.top) / r.height) * 100}%`); }}>
-                <div style={{ fontSize: "1.4rem", marginBottom: "0.9rem", color: "#6ee7f7", filter: "drop-shadow(0 0 8px rgba(110,231,247,0.6))" }}>{s.icon}</div>
-                <div className="syne" style={{ fontWeight: 700, fontSize: "0.93rem", marginBottom: "0.9rem", color: "#f0f0f8" }}>{s.name}</div>
-                <div>{s.tags.map(t => <span key={t} className="skill-pill">{t}</span>)}</div>
+              <div className="skill-cell" style={{ background: isDark ? "#060810" : "#f8fafc" }} onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`); e.currentTarget.style.setProperty("--my", `${((e.clientY - r.top) / r.height) * 100}%`); }}>
+                <div style={{ fontSize: "1.4rem", marginBottom: "0.9rem", color: accentColor, filter: `drop-shadow(0 0 8px ${accentColor}60)` }}>{s.icon}</div>
+                <div className="syne" style={{ fontWeight: 700, fontSize: "0.93rem", marginBottom: "0.9rem", color: fg }}>{s.name}</div>
+                <div style={{ marginBottom: "0.9rem" }}>{s.tags.map(t => <span key={t} className="skill-pill">{t}</span>)}</div>
+                <div>{s.bars.map((b, bi) => <SkillBar key={b.name} name={b.name} pct={b.pct} delay={bi * 0.1} theme={theme} />)}</div>
               </div>
             </Reveal>
           ))}
         </div>
       </section>
+      </SectionReveal>
 
       {/* PROJECTS */}
+      <SectionReveal delay={0}>
       <section id="projects" style={{ padding: "7rem 4rem", position: "relative", zIndex: 2 }}>
         <div className="section-label">My Work</div>
         <Reveal>
@@ -656,8 +754,10 @@ export default function App() {
           {projects.map((p, i) => (<Reveal key={p.name} delay={i * 0.07}><ProjectRow p={p} /></Reveal>))}
         </div>
       </section>
+      </SectionReveal>
 
       {/* EDUCATION */}
+      <SectionReveal delay={0}>
       <section id="education" style={{ padding: "7rem 4rem", background: "rgba(255,255,255,0.012)", borderTop: "1px solid rgba(110,231,247,0.06)", borderBottom: "1px solid rgba(110,231,247,0.06)", position: "relative", zIndex: 2 }}>
         <div className="section-label">Background</div>
         <Reveal><h2 className="syne" style={{ fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "3rem", color: "#f0f0f8" }}>Education & Certifications</h2></Reveal>
@@ -694,8 +794,10 @@ export default function App() {
           </Reveal>
         </div>
       </section>
+      </SectionReveal>
 
       {/* CONTACT */}
+      <SectionReveal delay={0}>
       <section id="contact" style={{ padding: "7rem 4rem", position: "relative", zIndex: 2 }}>
         <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle,rgba(110,231,247,0.05) 0%,transparent 70%)", pointerEvents: "none", animation: "floatY 6s ease infinite" }} />
         <Reveal>
@@ -729,6 +831,7 @@ export default function App() {
           </div>
         </Reveal>
       </section>
+      </SectionReveal>
 
       <footer style={{ textAlign: "center", padding: "1.5rem 4rem", borderTop: "1px solid rgba(110,231,247,0.06)", position: "relative", zIndex: 2 }}>
         <span style={{ fontSize: 10, color: "rgba(232,232,240,0.18)", fontFamily: "monospace", letterSpacing: "0.1em" }}>
