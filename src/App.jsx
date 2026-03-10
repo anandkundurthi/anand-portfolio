@@ -578,26 +578,60 @@ export default function App() {
       </div>
 
       {/* NAV */}
-      <nav style={{ position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.2rem 4rem", background: scrolled ? "rgba(6,8,16,0.92)" : "transparent", backdropFilter: scrolled ? "blur(24px)" : "none", borderBottom: `1px solid ${scrolled ? "rgba(110,231,247,0.08)" : "transparent"}`, transition: "all 0.4s", boxShadow: scrolled ? "0 4px 30px rgba(0,0,0,0.3)" : "none" }}>
-        <span className="syne" style={{ fontWeight: 800, fontSize: "1.1rem", color: "#f0f0f8", textShadow: "0 0 20px rgba(110,231,247,0.3)" }}>AK<span style={{ color: "#6ee7f7" }}>.</span></span>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <div className="nav-links" style={{ display: "flex", gap: "2.2rem", alignItems: "center" }}>
-            {["About","Skills","Projects","Education","Contact"].map(n => (
-              <button key={n} className="nav-btn" onClick={() => scrollTo(n)}>{n}</button>
-            ))}
-	<button
-  className="btn-cyan"
-  style={{ padding: "8px 18px", fontSize: 10 }}
+	<nav
+  style={{
+    position: "sticky",
+    top: 0,
+    zIndex: 100,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "1.2rem 4rem",
+    background: scrolled ? "rgba(6,8,16,0.92)" : "transparent",
+    backdropFilter: scrolled ? "blur(24px)" : "none",
+    borderBottom: `1px solid ${scrolled ? "rgba(110,231,247,0.08)" : "transparent"}`,
+    transition: "all 0.4s",
+    boxShadow: scrolled ? "0 4px 30px rgba(0,0,0,0.3)" : "none"
+  }}
 >
-  ☀️
-</button>
+  <span
+    className="syne"
+    style={{
+      fontWeight: 800,
+      fontSize: "1.1rem",
+      color: "#f0f0f8",
+      textShadow: "0 0 20px rgba(110,231,247,0.3)"
+    }}
+  >
+    AK<span style={{ color: "#6ee7f7" }}>.</span>
+  </span>
 
-<div className="mobile-menu-btn" style={{ display: "none" }}>
-  <MobileNav scrollTo={scrollTo} />
-</div>
-        </div>
-      </nav>
+  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
 
+    <div
+      className="nav-links"
+      style={{ display: "flex", gap: "2.2rem", alignItems: "center" }}
+    >
+      {["About", "Skills", "Projects", "Education", "Contact"].map((n) => (
+        <button key={n} className="nav-btn" onClick={() => scrollTo(n)}>
+          {n}
+        </button>
+      ))}
+    </div>
+
+    <button
+      className="btn-cyan"
+      style={{ padding: "8px 18px", fontSize: 10 }}
+    >
+      ☀️
+    </button>
+
+    <div className="mobile-menu-btn" style={{ display: "none" }}>
+      <MobileNav scrollTo={scrollTo} />
+    </div>
+
+  </div>
+</nav>
       {/* HERO */}
       <SectionReveal><section id="about" className="hero-section" style={{ minHeight: "95vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "5rem 4rem 3rem", position: "relative", overflow: "hidden" }}>
         <ThreeHero />
@@ -710,7 +744,7 @@ export default function App() {
         <div className="section-label">Skills</div>
         <Reveal>
           <h2 className="syne" style={{ fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "0.7rem", color: "#f0f0f8" }}>What I Bring</h2>
-          <p style={{ color: isDark ? "rgba(232,232,240,0.38)" : "#475569", fontSize: "0.92rem", marginBottom: "3rem" }}>From building APIs to designing pixel-perfect interfaces.</p>
+          <p style={{ color: "rgba(232,232,240,0.38)", fontSize: "0.92rem", marginBottom: "3rem" }}>From building APIs to designing pixel-perfect interfaces.</p>
         </Reveal>
         <div className="skills-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1px", background: "rgba(110,231,247,0.06)" }}>
           {skills.map((s, i) => (
