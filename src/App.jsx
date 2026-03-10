@@ -300,7 +300,7 @@ function Avatar() {
       {/* Photo */}
       <div style={{ width: 220, height: 220, borderRadius: "50%", overflow: "hidden", border: "2px solid rgba(110,231,247,0.3)", position: "relative", boxShadow: "0 0 40px rgba(110,231,247,0.2), 0 0 80px rgba(110,231,247,0.08)" }}>
         <img
-          src={AVATAR_URL}
+          src={PHOTO_URL}
           alt="Anand Kundurthi"
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", filter: "brightness(1.05) contrast(1.05)" }}
           onError={(e) => {
