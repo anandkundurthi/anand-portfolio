@@ -81,7 +81,7 @@ function SkillBar({ name, pct, delay = 0 }) {
   return (
     <div ref={ref} style={{ marginBottom: 10 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-        <span style={{ fontSize: 11, color:"rgba(232,232,240,0.42)" : "#475569", fontFamily: "monospace", letterSpacing: "0.05em" }}>{name}</span>
+        <span style={{ fontSize: 11, color:"rgba(232,232,240,0.42)", fontFamily: "monospace", letterSpacing: "0.05em" }}>{name}</span>
         <span style={{ fontSize: 10, color: "#6ee7f7", fontFamily: "monospace" }}>{width > 0 ? pct+"%" : "0%"}</span>
       </div>
       <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
