@@ -6,7 +6,7 @@ const AVATAR_URL = "https://raw.githubusercontent.com/anandkundurthi/anand-portf
 const PHOTO_URL = "/avatar.jpg";
 
 const projects = [
-  { emoji: "📄", year: "2025", type: "Python · FastAPI · React.js · MySQL", name: "AI Resume Analyzer", desc: "Full-stack AI-powered resume analysis platform that evaluates resumes against job descriptions using skill-matching algorithms. Features PDF text extraction via PyPDF2, REST API scoring with FastAPI, session-based authentication, and an animated dashboard showing match scores and improvement suggestions.", github: "https://github.com/anandkundurthi/ai-resume-analyzer", live: "https://ai-resume-analyzer-tuet.onrender.com", color: isDark ? "#6ee7f7", num: "01" },
+  { emoji: "📄", year: "2025", type: "Python · FastAPI · React.js · MySQL", name: "AI Resume Analyzer", desc: "Full-stack AI-powered resume analysis platform that evaluates resumes against job descriptions using skill-matching algorithms. Features PDF text extraction via PyPDF2, REST API scoring with FastAPI, session-based authentication, and an animated dashboard showing match scores and improvement suggestions.", github: "https://github.com/anandkundurthi/ai-resume-analyzer", live: "https://ai-resume-analyzer-tuet.onrender.com", color: "#6ee7f7", num: "01" },
   { emoji: "🌐", year: "2024–2025", type: "React.js · Node.js · Express.js · PostgreSQL · MongoDB", name: "Full-Stack Web Applications", desc: "Suite of MERN stack applications implementing CRUD operations, REST APIs, and JWT authentication. Responsive UI layouts compatible across desktop and mobile. Optimized complex SQL queries using indexing and join optimization techniques.", github: "https://github.com/anandkundurthi", live: null, color: "#a5f3c0", num: "02" },
   { emoji: "🛒", year: "2025", type: "SQL · MySQL · Database Design", name: "SupplySync", desc: "A retail-focused MySQL project simulating real supermarket operations — inventory tracking, supplier handling, customer sales & billing, and business analytics with 20+ real-world SQL solutions.", github: "https://github.com/anandkundurthi/Dmart_mall_management", live: null, color: "#fde68a", num: "03" },
   { emoji: "🎨", year: "2025", type: "HTML · CSS · JavaScript", name: "Color Picker", desc: "An interactive color picker built with vanilla HTML, CSS, and JavaScript. Demonstrates core frontend skills — DOM manipulation, event handling, and dynamic UI updates.", github: "https://github.com/anandkundurthi/colorPicker", live: null, color: "#f0abfc", num: "04" },
@@ -43,7 +43,7 @@ function MobileNav({ scrollTo }) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button onClick={() => setOpen(!open)} style={{ background: "none", border: "1px solid rgba(110,231,247,0.15)", borderRadius: 6, padding: "8px 10px", cursor: "none", display: "flex", flexDirection: "column", gap: 4 }}>
+      <button onClick={() => setOpen(!open)} style={{ background: "none", border: "1px solid rgba(110,231,247,0.15)", borderRadius: 6, padding: "8px 10px", cursor: "none", display: "flex"}}>
         {[0,1,2].map(i => (
           <div key={i} style={{ width: open ? (i===1?0:20) : 20, height: 1.5, background: "#6ee7f7", borderRadius: 2, transition: "all 0.3s", transform: open ? (i===0?"rotate(45deg) translate(4px,4px)":i===2?"rotate(-45deg) translate(4px,-4px)":"none") : "none", opacity: open&&i===1?0:1 }} />
         ))}
@@ -53,7 +53,8 @@ function MobileNav({ scrollTo }) {
           <button onClick={() => setOpen(false)} style={{ position: "absolute", top: 24, right: 24, background: "none", border: "none", color: "#6ee7f7", fontSize: 24, cursor: "none" }}>✕</button>
           {["About","Skills","Projects","Education","Contact"].map(n => (
             <button key={n} onClick={() => { scrollTo(n); setOpen(false); }} style={{ background: "none", border: "none", color: "#e8e8f0", fontSize: "2rem", fontFamily: "'Syne',sans-serif", fontWeight: 800, cursor: "none" }}
-              onMouseEnter={e=>e.target.style.color="#6ee7f7"} onMouseLeave={e=>e.target.style.color="#e8e8f0"}>{n}</button>
+              onMouseEnter={e=>e.target.style.color="#6ee7f7"} 
+              onMouseLeave={e=>e.target.style.color="#e8e8f0"}>{n}</button>
           ))}
           <button className="btn-cyan" onClick={() => { scrollTo("contact"); setOpen(false); }}>Hire Me</button>
         </div>
@@ -80,7 +81,7 @@ function SkillBar({ name, pct, delay = 0 }) {
   return (
     <div ref={ref} style={{ marginBottom: 10 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-        <span style={{ fontSize: 11, color: isDark ? "rgba(232,232,240,0.42)" : "#475569", fontFamily: "monospace", letterSpacing: "0.05em" }}>{name}</span>
+        <span style={{ fontSize: 11, color:"rgba(232,232,240,0.42)" : "#475569", fontFamily: "monospace", letterSpacing: "0.05em" }}>{name}</span>
         <span style={{ fontSize: 10, color: "#6ee7f7", fontFamily: "monospace" }}>{width > 0 ? pct+"%" : "0%"}</span>
       </div>
       <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
@@ -501,7 +502,7 @@ export default function App() {
   const scrollTo = (id) => { const el = document.getElementById(id.toLowerCase()); if (el) el.scrollIntoView({ behavior: "smooth" }); };
 
   return (
-    <div style={{ background: isDark?"#060810":"#f0f4f8", color: isDark?"#e8e8f0":"#1a1a2e", fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", overflowX: "hidden" }}>
+    <div style={{ background: "#060810":"#f0f4f8", color: "#e8e8f0", fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", overflowX: "hidden" }}>
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
