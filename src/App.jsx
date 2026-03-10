@@ -578,60 +578,31 @@ export default function App() {
       </div>
 
       {/* NAV */}
-	<nav
-  style={{
-    position: "sticky",
-    top: 0,
-    zIndex: 100,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "1.2rem 4rem",
-    background: scrolled ? "rgba(6,8,16,0.92)" : "transparent",
-    backdropFilter: scrolled ? "blur(24px)" : "none",
-    borderBottom: `1px solid ${scrolled ? "rgba(110,231,247,0.08)" : "transparent"}`,
-    transition: "all 0.4s",
-    boxShadow: scrolled ? "0 4px 30px rgba(0,0,0,0.3)" : "none"
-  }}
->
-  <span
-    className="syne"
-    style={{
-      fontWeight: 800,
-      fontSize: "1.1rem",
-      color: "#f0f0f8",
-      textShadow: "0 0 20px rgba(110,231,247,0.3)"
-    }}
-  >
+        
+       <nav style={{ position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.2rem 4rem" }}>
+
+  <span className="syne" style={{ fontWeight: 800, fontSize: "1.1rem", color: "#f0f0f8" }}>
     AK<span style={{ color: "#6ee7f7" }}>.</span>
   </span>
 
   <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
 
-    <div
-      className="nav-links"
-      style={{ display: "flex", gap: "2.2rem", alignItems: "center" }}
-    >
-      {["About", "Skills", "Projects", "Education", "Contact"].map((n) => (
+    <div className="nav-links" style={{ display: "flex", gap: "2.2rem", alignItems: "center" }}>
+      {["About","Skills","Projects","Education","Contact"].map(n => (
         <button key={n} className="nav-btn" onClick={() => scrollTo(n)}>
           {n}
         </button>
       ))}
     </div>
 
-    <button
-      className="btn-cyan"
-      style={{ padding: "8px 18px", fontSize: 10 }}
-    >
-      ☀️
-    </button>
-
     <div className="mobile-menu-btn" style={{ display: "none" }}>
       <MobileNav scrollTo={scrollTo} />
     </div>
 
   </div>
+
 </nav>
+
       {/* HERO */}
       <SectionReveal><section id="about" className="hero-section" style={{ minHeight: "95vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "5rem 4rem 3rem", position: "relative", overflow: "hidden" }}>
         <ThreeHero />
