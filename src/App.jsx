@@ -585,14 +585,16 @@ export default function App() {
             {["About","Skills","Projects","Education","Contact"].map(n => (
               <button key={n} className="nav-btn" onClick={() => scrollTo(n)}>{n}</button>
             ))}
-            <button className="btn-cyan" style={{ padding: "8px 18px", fontSize: 10 }} onClick={() => scrollTo("contact")}>Hire Me</button>
-          </div>
-          <button onClick={() => setTheme(t => t==="dark"?"light":"dark")} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(110,231,247,0.12)", borderRadius: 20, padding: "6px 14px", cursor: "none", color: "#6ee7f7", fontSize: 16, transition: "all 0.3s", flexShrink: 0 }}>
-            {isDark ? "☀️" : "🌙"}
-          </button>
-          <div className="mobile-menu-btn" style={{ display: "none" }}>
-            <MobileNav scrollTo={scrollTo} />
-          </div>
+	<button
+  className="btn-cyan"
+  style={{ padding: "8px 18px", fontSize: 10 }}
+>
+  ☀️
+</button>
+
+<div className="mobile-menu-btn" style={{ display: "none" }}>
+  <MobileNav scrollTo={scrollTo} />
+</div>
         </div>
       </nav>
 
