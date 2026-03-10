@@ -6,7 +6,7 @@ const AVATAR_URL = "https://raw.githubusercontent.com/anandkundurthi/anand-portf
 const PHOTO_URL = "/avatar.jpg";
 
 const projects = [
-  { emoji: "📄", year: "2025", type: "Python · FastAPI · React.js · MySQL", name: "AI Resume Analyzer", desc: "Full-stack AI-powered resume analysis platform that evaluates resumes against job descriptions using skill-matching algorithms. Features PDF text extraction via PyPDF2, REST API scoring with FastAPI, session-based authentication, and an animated dashboard showing match scores and improvement suggestions.", github: "https://github.com/anandkundurthi/ai-resume-analyzer", live: "https://ai-resume-analyzer-tuet.onrender.com", color: "#6ee7f7", num: "01" },
+  { emoji: "📄", year: "2025", type: "Python · FastAPI · React.js · MySQL", name: "AI Resume Analyzer", desc: "Full-stack AI-powered resume analysis platform that evaluates resumes against job descriptions using skill-matching algorithms. Features PDF text extraction via PyPDF2, REST API scoring with FastAPI, session-based authentication, and an animated dashboard showing match scores and improvement suggestions.", github: "https://github.com/anandkundurthi/ai-resume-analyzer", live: "https://ai-resume-analyzer-tuet.onrender.com", color: isDark ? "#6ee7f7" : "#0284c7", num: "01" },
   { emoji: "🌐", year: "2024–2025", type: "React.js · Node.js · Express.js · PostgreSQL · MongoDB", name: "Full-Stack Web Applications", desc: "Suite of MERN stack applications implementing CRUD operations, REST APIs, and JWT authentication. Responsive UI layouts compatible across desktop and mobile. Optimized complex SQL queries using indexing and join optimization techniques.", github: "https://github.com/anandkundurthi", live: null, color: "#a5f3c0", num: "02" },
   { emoji: "🛒", year: "2025", type: "SQL · MySQL · Database Design", name: "SupplySync", desc: "A retail-focused MySQL project simulating real supermarket operations — inventory tracking, supplier handling, customer sales & billing, and business analytics with 20+ real-world SQL solutions.", github: "https://github.com/anandkundurthi/Dmart_mall_management", live: null, color: "#fde68a", num: "03" },
   { emoji: "🎨", year: "2025", type: "HTML · CSS · JavaScript", name: "Color Picker", desc: "An interactive color picker built with vanilla HTML, CSS, and JavaScript. Demonstrates core frontend skills — DOM manipulation, event handling, and dynamic UI updates.", github: "https://github.com/anandkundurthi/colorPicker", live: null, color: "#f0abfc", num: "04" },
@@ -80,7 +80,7 @@ function SkillBar({ name, pct, delay = 0 }) {
   return (
     <div ref={ref} style={{ marginBottom: 10 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-        <span style={{ fontSize: 11, color: "rgba(232,232,240,0.5)", fontFamily: "monospace", letterSpacing: "0.05em" }}>{name}</span>
+        <span style={{ fontSize: 11, color: isDark ? "rgba(232,232,240,0.42)" : "#475569", fontFamily: "monospace", letterSpacing: "0.05em" }}>{name}</span>
         <span style={{ fontSize: 10, color: "#6ee7f7", fontFamily: "monospace" }}>{width > 0 ? pct+"%" : "0%"}</span>
       </div>
       <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden" }}>
@@ -709,7 +709,7 @@ export default function App() {
         <div className="section-label">Skills</div>
         <Reveal>
           <h2 className="syne" style={{ fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "0.7rem", color: "#f0f0f8" }}>What I Bring</h2>
-          <p style={{ color: "rgba(232,232,240,0.38)", fontSize: "0.92rem", marginBottom: "3rem" }}>From building APIs to designing pixel-perfect interfaces.</p>
+          <p style={{ color: isDark ? "rgba(232,232,240,0.38)" : "#475569", fontSize: "0.92rem", marginBottom: "3rem" }}>From building APIs to designing pixel-perfect interfaces.</p>
         </Reveal>
         <div className="skills-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1px", background: "rgba(110,231,247,0.06)" }}>
           {skills.map((s, i) => (
