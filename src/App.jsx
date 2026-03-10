@@ -703,7 +703,6 @@ export default function App() {
           </Reveal>
         </div>
       </section>
-        </SectionReveal>
 
       {/* SKILLS */}
       <SectionReveal><section id="skills" style={{ padding: "7rem 4rem", background: "rgba(255,255,255,0.012)", borderTop: "1px solid rgba(110,231,247,0.06)", borderBottom: "1px solid rgba(110,231,247,0.06)", position: "relative", zIndex: 2 }}>
