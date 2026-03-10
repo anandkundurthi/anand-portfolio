@@ -492,7 +492,7 @@ function ProjectRow({ p }) {
 
 /* ─── MAIN APP ──────────────────────────────────────────────────────────── */
 export default function App() {
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60);
