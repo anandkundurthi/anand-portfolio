@@ -493,6 +493,8 @@ function ProjectRow({ p }) {
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [theme, setTheme] = useState("dark");
+  const isDark = theme === "dark";
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", fn, { passive: true });
