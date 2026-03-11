@@ -197,60 +197,119 @@ function ScrollProgress() {
 
 /* ─── THREE.JS HERO ─────────────────────────────────────────────────────── */
 function ThreeHero() {
-  const mountRef = useRef(null);
+  const canvasRef = useRef(null);
   useEffect(() => {
-    const el = mountRef.current;
-    if (!el) return;
-    let cleanup = null;
-    const existing = document.querySelector('script[src*="three.min.js"]');
-    const load = () => {
-      const THREE = window.THREE;
-      const W = el.clientWidth, H = el.clientHeight;
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      renderer.setSize(W, H);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      el.appendChild(renderer.domElement);
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 100);
-      camera.position.set(0, 0, 5);
-      const knotGeo = new THREE.TorusKnotGeometry(1.2, 0.38, 180, 24, 2, 3);
-      const knot = new THREE.Mesh(knotGeo, new THREE.MeshBasicMaterial({ color: 0x6ee7f7, wireframe: true, opacity: 0.18, transparent: true }));
-      scene.add(knot);
-      const sphere = new THREE.Mesh(new THREE.SphereGeometry(2.6, 24, 16), new THREE.MeshBasicMaterial({ color: 0x6ee7f7, wireframe: true, opacity: 0.05, transparent: true }));
-      scene.add(sphere);
-      const ico = new THREE.Mesh(new THREE.IcosahedronGeometry(1.8, 1), new THREE.MeshBasicMaterial({ color: 0xa5f3c0, wireframe: true, opacity: 0.07, transparent: true }));
-      scene.add(ico);
-      const positions = new Float32Array(300 * 3);
-      for (let i = 0; i < 900; i++) positions[i] = (Math.random() - 0.5) * 20;
-      const starGeo = new THREE.BufferGeometry();
-      starGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-      scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0x6ee7f7, size: 0.03, opacity: 0.4, transparent: true })));
-      let mouseX = 0, mouseY = 0;
-      const onMouse = (e) => { mouseX = (e.clientX / window.innerWidth - 0.5) * 2; mouseY = -(e.clientY / window.innerHeight - 0.5) * 2; };
-      window.addEventListener("mousemove", onMouse);
-      const onResize = () => { const w = el.clientWidth, h = el.clientHeight; camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); };
-      window.addEventListener("resize", onResize);
-      let t = 0, animId;
-      const animate = () => {
-        animId = requestAnimationFrame(animate); t += 0.005;
-        knot.rotation.x = t * 0.4 + mouseY * 0.3; knot.rotation.y = t * 0.6 + mouseX * 0.3;
-        sphere.rotation.y = t * 0.15; sphere.rotation.x = t * 0.08;
-        ico.rotation.x = -t * 0.2 + mouseY * 0.1; ico.rotation.z = t * 0.25 + mouseX * 0.1;
-        renderer.render(scene, camera);
-      };
-      animate();
-      cleanup = () => { cancelAnimationFrame(animId); window.removeEventListener("mousemove", onMouse); window.removeEventListener("resize", onResize); renderer.dispose(); if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement); };
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    const WORDS = [
+      "React","Python","FastAPI","Node.js","SQL","MongoDB","Express",
+      "REST API","JWT","Git","Linux","Figma","TypeScript","HTML","CSS",
+      "PostgreSQL","MySQL","Redux","JSON","async","useState","useEffect",
+      "fetch()","pip","npm","docker","API","CRUD","ORM","DSA","HTTP",
+      ".map()","class","import","export","def","return","await","const",
+    ];
+
+    let W, H, animId;
+
+    const resize = () => {
+      W = canvas.parentElement.clientWidth;
+      H = canvas.parentElement.clientHeight;
+      canvas.width = W;
+      canvas.height = H;
+      initColumns();
     };
-    if (existing && window.THREE) { load(); }
-    else {
-      const script = document.createElement("script");
-      script.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
-      script.onload = load;
-      document.head.appendChild(script);
-    }
-    return () => { if (cleanup) cleanup(); };
+
+    const COL_WIDTH = 88;
+    let columns = [];
+
+    const initColumns = () => {
+      const count = Math.floor(W / COL_WIDTH);
+      columns = Array.from({ length: count }, (_, i) => ({
+        x: i * COL_WIDTH + COL_WIDTH / 2,
+        y: Math.random() * -H,
+        speed: 0.7 + Math.random() * 1.1,
+        words: [],
+        trailLen: 5 + Math.floor(Math.random() * 5),
+        timer: 0,
+        interval: 16 + Math.floor(Math.random() * 20),
+        fontSize: 10 + Math.random() * 3,
+        active: Math.random() > 0.3,
+        pauseTimer: Math.random() * 180,
+      }));
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    const draw = () => {
+      animId = requestAnimationFrame(draw);
+      ctx.fillStyle = "rgba(6,8,16,0.16)";
+      ctx.fillRect(0, 0, W, H);
+
+      columns.forEach(col => {
+        if (!col.active) {
+          col.pauseTimer--;
+          if (col.pauseTimer <= 0) {
+            col.active = true; col.y = -40; col.words = [];
+          }
+          return;
+        }
+        col.timer++;
+        col.y += col.speed;
+
+        if (col.timer % col.interval === 0) {
+          const word = WORDS[Math.floor(Math.random() * WORDS.length)];
+          col.words.unshift({ text: word, y: col.y });
+          if (col.words.length > col.trailLen) col.words.pop();
+        }
+
+        col.words.forEach((w, idx) => {
+          const fade = 1 - idx / col.trailLen;
+          ctx.font = `${col.fontSize}px monospace`;
+          ctx.textAlign = "center";
+          if (idx === 0) {
+            ctx.shadowBlur = 14; ctx.shadowColor = "#6ee7f7";
+            ctx.fillStyle = `rgba(210,255,255,${fade})`;
+          } else if (idx === 1) {
+            ctx.shadowBlur = 7; ctx.shadowColor = "#6ee7f7";
+            ctx.fillStyle = `rgba(110,231,247,${fade * 0.9})`;
+          } else {
+            ctx.shadowBlur = 0;
+            const cyan = idx % 2 === 0;
+            ctx.fillStyle = cyan
+              ? `rgba(110,231,247,${fade * 0.5})`
+              : `rgba(165,243,192,${fade * 0.45})`;
+          }
+          ctx.fillText(w.text, col.x, w.y);
+          ctx.shadowBlur = 0;
+        });
+
+        if (col.y > H + 200) {
+          col.active = false;
+          col.pauseTimer = 80 + Math.random() * 160;
+          col.speed = 0.7 + Math.random() * 1.1;
+          col.trailLen = 5 + Math.floor(Math.random() * 5);
+          col.interval = 16 + Math.floor(Math.random() * 20);
+          col.words = [];
+        }
+      });
+    };
+
+    draw();
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
   }, []);
-  return <div ref={mountRef} style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }} />;
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.72 }}
+    />
+  );
 }
 
 /* ─── PARTICLE FIELD ────────────────────────────────────────────────────── */
