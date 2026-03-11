@@ -43,20 +43,54 @@ function MobileNav({ scrollTo }) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button onClick={() => setOpen(!open)} style={{ background: "none", border: "1px solid rgba(110,231,247,0.15)", borderRadius: 6, padding: "8px 10px", cursor: "none", display: "flex", flexDirection: "column", gap: 5, alignItems: "center", justifyContent: "center" }}>
-        {[0,1,2].map(i => (
-          <div key={i} style={{ width: open ? (i===1?0:20) : 20, height: 1.5, background: "#6ee7f7", borderRadius: 2, transition: "all 0.3s", transform: open ? (i===0?"rotate(45deg) translate(4px,4px)":i===2?"rotate(-45deg) translate(4px,-4px)":"none") : "none", opacity: open&&i===1?0:1 }} />
-        ))}
+      {/* Hamburger button */}
+      <button
+        onClick={() => setOpen(true)}
+        style={{ background: "none", border: "1px solid rgba(110,231,247,0.2)", borderRadius: 6, padding: "10px 12px", cursor: "none", display: "flex", flexDirection: "column", gap: 5, alignItems: "center", justifyContent: "center", zIndex: 101 }}
+      >
+        <div style={{ width: 22, height: 2, background: "#6ee7f7", borderRadius: 2 }} />
+        <div style={{ width: 22, height: 2, background: "#6ee7f7", borderRadius: 2 }} />
+        <div style={{ width: 22, height: 2, background: "#6ee7f7", borderRadius: 2 }} />
       </button>
+
+      {/* Full-screen overlay — rendered in body via portal-style fixed positioning */}
       {open && (
-        <div style={{ position: "fixed", inset: 0, background: "#060810", zIndex: 999, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2rem" }}>
-          <button onClick={() => setOpen(false)} style={{ position: "absolute", top: 24, right: 24, background: "none", border: "none", color: "#6ee7f7", fontSize: 24, cursor: "none" }}>✕</button>
-          {["About","Skills","Projects","Education","Contact"].map(n => (
-            <button key={n} onClick={() => { scrollTo(n); setOpen(false); }} style={{ background: "none", border: "none", color: "#e8e8f0", fontSize: "2rem", fontFamily: "'Syne',sans-serif", fontWeight: 800, cursor: "none" }}
-              onMouseEnter={e=>e.target.style.color="#6ee7f7"} 
-              onMouseLeave={e=>e.target.style.color="#e8e8f0"}>{n}</button>
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          background: "rgba(6,8,16,0.98)", backdropFilter: "blur(20px)",
+          zIndex: 9998, display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center", gap: "2.5rem"
+        }}>
+          {/* Close button */}
+          <button
+            onClick={() => setOpen(false)}
+            style={{ position: "absolute", top: 20, right: 20, background: "none", border: "1px solid rgba(110,231,247,0.2)", borderRadius: "50%", width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", color: "#6ee7f7", fontSize: 20, cursor: "none", zIndex: 9999 }}
+          >✕</button>
+
+          {/* Logo */}
+          <div style={{ position: "absolute", top: 22, left: 24, fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: "1.2rem", color: "#f0f0f8" }}>
+            AK<span style={{ color: "#6ee7f7" }}>.</span>
+          </div>
+
+          {/* Nav links */}
+          {["About","Skills","Projects","Education","Contact"].map((n, i) => (
+            <button
+              key={n}
+              onClick={() => { setOpen(false); setTimeout(() => scrollTo(n), 300); }}
+              style={{ background: "none", border: "none", color: "rgba(232,232,240,0.7)", fontSize: "2.2rem", fontFamily: "'Syne',sans-serif", fontWeight: 800, cursor: "none", letterSpacing: "-0.02em", transition: "color 0.2s", padding: "0.2rem 0" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#6ee7f7"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(232,232,240,0.7)"}
+            >{n}</button>
           ))}
-          <button className="btn-cyan" onClick={() => { scrollTo("contact"); setOpen(false); }}>Hire Me</button>
+
+          <button className="btn-cyan" onClick={() => { setOpen(false); setTimeout(() => scrollTo("contact"), 300); }}>
+            Hire Me
+          </button>
+
+          {/* Bottom line */}
+          <div style={{ position: "absolute", bottom: 30, fontSize: 10, color: "rgba(110,231,247,0.3)", fontFamily: "monospace", letterSpacing: "0.15em" }}>
+            ANAND KUNDURTHI · FULL-STACK DEVELOPER
+          </div>
         </div>
       )}
     </>
