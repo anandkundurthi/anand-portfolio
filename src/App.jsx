@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 /* ─── DATA ──────────────────────────────────────────────────────────────── */
 const AVATAR_URL = "https://raw.githubusercontent.com/anandkundurthi/anand-portfolio/main/src/assets/anand-avatar.png";
 
-const PHOTO_URL = "/avatar.jpg";
+const PHOTO_URL = "/avatar.jpg?v=3";
 
 const projects = [
   { emoji: "📄", year: "2025", type: "Python · FastAPI · React.js · MySQL", name: "AI Resume Analyzer", desc: "Full-stack AI-powered resume analysis platform that evaluates resumes against job descriptions using skill-matching algorithms. Features PDF text extraction via PyPDF2, REST API scoring with FastAPI, session-based authentication, and an animated dashboard showing match scores and improvement suggestions.", github: "https://github.com/anandkundurthi/ai-resume-analyzer", live: "https://ai-resume-analyzer-tuet.onrender.com", color: "#6ee7f7", num: "01" },
@@ -43,7 +43,7 @@ function MobileNav({ scrollTo }) {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button onClick={() => setOpen(!open)} style={{ background: "none", border: "1px solid rgba(110,231,247,0.15)", borderRadius: 6, padding: "8px 10px", cursor: "none", display: "flex"}}>
+      <button onClick={() => setOpen(!open)} style={{ background: "none", border: "1px solid rgba(110,231,247,0.15)", borderRadius: 6, padding: "8px 10px", cursor: "none", display: "flex", flexDirection: "column", gap: 5, alignItems: "center", justifyContent: "center" }}>
         {[0,1,2].map(i => (
           <div key={i} style={{ width: open ? (i===1?0:20) : 20, height: 1.5, background: "#6ee7f7", borderRadius: 2, transition: "all 0.3s", transform: open ? (i===0?"rotate(45deg) translate(4px,4px)":i===2?"rotate(-45deg) translate(4px,-4px)":"none") : "none", opacity: open&&i===1?0:1 }} />
         ))}
@@ -492,7 +492,7 @@ function ProjectRow({ p }) {
 
 /* ─── MAIN APP ──────────────────────────────────────────────────────────── */
 export default function App() {
-  const [loaded, setLoaded] = useState(true);
+  const [loaded, setLoaded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60);
@@ -545,7 +545,18 @@ export default function App() {
         .section-label::after { content:''; width:40px; height:1px; background:rgba(110,231,247,0.3); }
         .social-link { color:rgba(232,232,240,0.3); text-decoration:none; font-size:9px; letter-spacing:0.15em; text-transform:uppercase; font-family:monospace; writing-mode:vertical-rl; transition:all 0.25s; cursor:none; }
         .social-link:hover { color:#6ee7f7; text-shadow:0 0 10px rgba(110,231,247,0.6); }
+        [data-theme="light"] .skill-cell { background: #ffffff !important; }
+        [data-theme="light"] .skill-pill { border-color: rgba(8,145,178,0.25); color: rgba(15,23,42,0.6); }
+        [data-theme="light"] .skill-pill:hover { border-color: #0891b2; color: #0891b2; background: rgba(8,145,178,0.06); }
+        [data-theme="light"] .cert-row:hover { background: rgba(8,145,178,0.06); }
+        [data-theme="light"] .nav-btn { color: rgba(15,23,42,0.55); }
+        [data-theme="light"] .nav-btn:hover { color: #0891b2; }
+        [data-theme="light"] .stat-card { border-color: rgba(8,145,178,0.15); background: rgba(8,145,178,0.04); }
+        [data-theme="light"] .exp-block { border-left-color: rgba(8,145,178,0.2); }
+        [data-theme="light"] .section-label { color: #0891b2; }
+        [data-theme="light"] .section-label::after { background: rgba(8,145,178,0.3); }
         @media (max-width:768px) {
+          .mobile-menu-btn { display:flex !important; align-items:center; }
           .nav-links { display:none !important; }
           .side-socials { display:none !important; }
           .hero-section { padding:5rem 1.5rem 3rem !important; }
@@ -579,26 +590,22 @@ export default function App() {
 
       {/* NAV */}
         
-       <nav style={{ position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.2rem 4rem" }}>
+       <nav style={{ position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 2rem", background: "rgba(6,8,16,0.85)", backdropFilter: "blur(12px)" }}>
 
   <span className="syne" style={{ fontWeight: 800, fontSize: "1.1rem", color: "#f0f0f8" }}>
     AK<span style={{ color: "#6ee7f7" }}>.</span>
   </span>
 
-  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-
+  <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
     <div className="nav-links" style={{ display: "flex", gap: "2.2rem", alignItems: "center" }}>
       {["About","Skills","Projects","Education","Contact"].map(n => (
-        <button key={n} className="nav-btn" onClick={() => scrollTo(n)}>
-          {n}
-        </button>
+        <button key={n} className="nav-btn" onClick={() => scrollTo(n)}>{n}</button>
       ))}
+      <button className="btn-cyan" style={{ padding: "8px 18px", fontSize: 10 }} onClick={() => scrollTo("contact")}>Hire Me</button>
     </div>
-
     <div className="mobile-menu-btn" style={{ display: "none" }}>
       <MobileNav scrollTo={scrollTo} />
     </div>
-
   </div>
 
 </nav>
