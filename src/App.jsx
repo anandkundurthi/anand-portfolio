@@ -372,21 +372,79 @@ function Clock() {
 
 /* ─── CUSTOM CURSOR ─────────────────────────────────────────────────────── */
 function CustomCursor() {
-  const dot = useRef(null); const ring = useRef(null);
-  const pos = useRef({ x: 0, y: 0 }); const ringPos = useRef({ x: 0, y: 0 });
+  const dot = useRef(null);
+  const ring = useRef(null);
+  const trailsRef = useRef([]);
+  const pos = useRef({ x: 0, y: 0 });
+  const ringPos = useRef({ x: 0, y: 0 });
+  const TRAIL_COUNT = 12;
+
   useEffect(() => {
-    const onMove = (e) => { pos.current = { x: e.clientX, y: e.clientY }; if (dot.current) { dot.current.style.left = e.clientX + "px"; dot.current.style.top = e.clientY + "px"; } };
-    window.addEventListener("mousemove", onMove);
-    let animId;
     const lerp = (a, b, t) => a + (b - a) * t;
-    const animate = () => { animId = requestAnimationFrame(animate); ringPos.current.x = lerp(ringPos.current.x, pos.current.x, 0.12); ringPos.current.y = lerp(ringPos.current.y, pos.current.y, 0.12); if (ring.current) { ring.current.style.left = ringPos.current.x + "px"; ring.current.style.top = ringPos.current.y + "px"; } };
+    const trail = Array.from({ length: TRAIL_COUNT }, (_, i) => ({
+      x: 0, y: 0, el: trailsRef.current[i]
+    }));
+
+    const onMove = (e) => {
+      pos.current = { x: e.clientX, y: e.clientY };
+      if (dot.current) { dot.current.style.left = e.clientX + "px"; dot.current.style.top = e.clientY + "px"; }
+      // Magnetic buttons
+      document.querySelectorAll(".btn-cyan, .btn-ghost, .btn-green, .nav-btn").forEach(btn => {
+        const r = btn.getBoundingClientRect();
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        const dx = e.clientX - cx, dy = e.clientY - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const threshold = 80;
+        if (dist < threshold) {
+          const pull = (1 - dist / threshold) * 0.35;
+          btn.style.transform = `translate(${dx * pull}px, ${dy * pull}px)`;
+        } else {
+          btn.style.transform = "translate(0px, 0px)";
+        }
+      });
+    };
+    window.addEventListener("mousemove", onMove);
+
+    let animId;
+    const animate = () => {
+      animId = requestAnimationFrame(animate);
+      ringPos.current.x = lerp(ringPos.current.x, pos.current.x, 0.1);
+      ringPos.current.y = lerp(ringPos.current.y, pos.current.y, 0.1);
+      if (ring.current) { ring.current.style.left = ringPos.current.x + "px"; ring.current.style.top = ringPos.current.y + "px"; }
+      // Update trail positions
+      let prevX = pos.current.x, prevY = pos.current.y;
+      trail.forEach((t, i) => {
+        t.x = lerp(t.x, prevX, 0.45 - i * 0.025);
+        t.y = lerp(t.y, prevY, 0.45 - i * 0.025);
+        if (t.el) { t.el.style.left = t.x + "px"; t.el.style.top = t.y + "px"; t.el.style.opacity = (1 - i / TRAIL_COUNT) * 0.35; }
+        prevX = t.x; prevY = t.y;
+      });
+    };
     animate();
-    return () => { window.removeEventListener("mousemove", onMove); cancelAnimationFrame(animId); };
+
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(animId);
+      document.querySelectorAll(".btn-cyan, .btn-ghost, .btn-green, .nav-btn").forEach(btn => { btn.style.transform = ""; });
+    };
   }, []);
+
   return (
     <>
-      <div ref={dot} style={{ position: "fixed", width: 6, height: 6, background: "#6ee7f7", borderRadius: "50%", pointerEvents: "none", zIndex: 9999, transform: "translate(-50%,-50%)", boxShadow: "0 0 10px rgba(110,231,247,0.8)" }} />
-      <div ref={ring} style={{ position: "fixed", width: 32, height: 32, border: "1px solid rgba(110,231,247,0.5)", borderRadius: "50%", pointerEvents: "none", zIndex: 9998, transform: "translate(-50%,-50%)" }} />
+      {/* Trail dots */}
+      {Array.from({ length: TRAIL_COUNT }, (_, i) => (
+        <div key={i} ref={el => trailsRef.current[i] = el} style={{
+          position: "fixed", width: 6 - i * 0.35, height: 6 - i * 0.35,
+          background: i < 4 ? "#6ee7f7" : "#a5f3c0",
+          borderRadius: "50%", pointerEvents: "none", zIndex: 9996,
+          transform: "translate(-50%,-50%)", transition: "opacity 0.1s",
+          boxShadow: i === 0 ? "0 0 6px rgba(110,231,247,0.6)" : "none"
+        }} />
+      ))}
+      {/* Main dot */}
+      <div ref={dot} style={{ position: "fixed", width: 7, height: 7, background: "#6ee7f7", borderRadius: "50%", pointerEvents: "none", zIndex: 9999, transform: "translate(-50%,-50%)", boxShadow: "0 0 12px rgba(110,231,247,1)" }} />
+      {/* Outer ring */}
+      <div ref={ring} style={{ position: "fixed", width: 36, height: 36, border: "1px solid rgba(110,231,247,0.4)", borderRadius: "50%", pointerEvents: "none", zIndex: 9998, transform: "translate(-50%,-50%)" }} />
     </>
   );
 }
@@ -501,24 +559,70 @@ function ProjectRow({ p }) {
   const [hov, setHov] = useState(false);
   return (
     <TiltCard color={p.color}>
-      <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-        style={{ display: "grid", gridTemplateColumns: "60px 1fr 130px", alignItems: "center", gap: "1.5rem", padding: "1.8rem 2rem", borderBottom: "1px solid rgba(255,255,255,0.05)", background: hov ? "rgba(110,231,247,0.025)" : "transparent", transition: "background 0.3s", position: "relative", overflow: "hidden" }}>
-        {hov && <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, ${p.color}08, transparent)`, pointerEvents: "none" }} />}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 3, height: 36, background: hov ? p.color : "rgba(255,255,255,0.1)", borderRadius: 2, transition: "all 0.3s", boxShadow: hov ? `0 0 14px ${p.color}` : "none", flexShrink: 0 }} />
-          <span style={{ fontFamily: "monospace", fontSize: 11, color: "rgba(255,255,255,0.3)" }}>{p.num}</span>
-        </div>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6, flexWrap: "wrap" }}>
-            <span style={{ fontSize: "1rem", fontWeight: 700, color: hov ? p.color : "#f0f0f8", transition: "color 0.3s", fontFamily: "'Syne', sans-serif" }}>{p.emoji} {p.name}</span>
-            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{p.type}</span>
+      <div
+        onMouseEnter={() => setHov(true)}
+        onMouseLeave={() => setHov(false)}
+        style={{
+          position: "relative", overflow: "hidden",
+          padding: "2rem 2.2rem",
+          borderBottom: "1px solid rgba(255,255,255,0.05)",
+          background: hov
+            ? `linear-gradient(135deg, ${p.color}12 0%, rgba(255,255,255,0.04) 100%)`
+            : "rgba(255,255,255,0.015)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          transition: "background 0.4s",
+          borderLeft: hov ? `2px solid ${p.color}` : "2px solid transparent",
+        }}
+      >
+        {/* Glow sweep on hover */}
+        <div style={{
+          position: "absolute", inset: 0, opacity: hov ? 1 : 0, transition: "opacity 0.4s", pointerEvents: "none",
+          background: `radial-gradient(ellipse at top left, ${p.color}18 0%, transparent 60%)`,
+        }} />
+        {/* Top row: number + name + type + links */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1.5rem", flexWrap: "wrap", marginBottom: "0.9rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <span style={{
+              fontFamily: "monospace", fontSize: 10, color: p.color,
+              background: `${p.color}18`, border: `1px solid ${p.color}33`,
+              padding: "3px 10px", borderRadius: 20, letterSpacing: "0.1em"
+            }}>{p.num}</span>
+            <span style={{ fontSize: "1.05rem", fontWeight: 700, color: hov ? p.color : "#f0f0f8", transition: "color 0.3s", fontFamily: "'Syne', sans-serif" }}>
+              {p.emoji} {p.name}
+            </span>
           </div>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, margin: 0 }}>{p.desc}</p>
+          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+            <a href={p.github} target="_blank" rel="noreferrer" style={{
+              fontSize: 11, color: hov ? p.color : "rgba(255,255,255,0.45)", textDecoration: "none",
+              border: `1px solid ${hov ? p.color : "rgba(255,255,255,0.1)"}`,
+              padding: "5px 14px", borderRadius: 20, transition: "all 0.25s", letterSpacing: "0.05em",
+              background: hov ? `${p.color}10` : "transparent",
+              boxShadow: hov ? `0 0 14px ${p.color}44` : "none",
+            }}>↗ Code</a>
+            {p.live && (
+              <a href={p.live} target="_blank" rel="noreferrer" style={{
+                fontSize: 11, color: "#4ade80", textDecoration: "none",
+                border: "1px solid rgba(74,222,128,0.35)", padding: "5px 14px",
+                borderRadius: 20, background: "rgba(74,222,128,0.07)",
+                boxShadow: hov ? "0 0 14px rgba(74,222,128,0.3)" : "none", transition: "box-shadow 0.3s",
+              }}>⬢ Live</a>
+            )}
+          </div>
         </div>
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
-          <a href={p.github} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: hov ? p.color : "rgba(255,255,255,0.4)", textDecoration: "none", border: `1px solid ${hov ? p.color : "rgba(255,255,255,0.12)"}`, padding: "5px 12px", borderRadius: 4, transition: "all 0.25s", letterSpacing: "0.05em", whiteSpace: "nowrap", boxShadow: hov ? `0 0 10px ${p.color}44` : "none" }}>↗ View</a>
-          {p.live && <a href={p.live} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#4ade80", textDecoration: "none", border: "1px solid rgba(74,222,128,0.3)", padding: "5px 12px", borderRadius: 4, whiteSpace: "nowrap" }}>⬢ Live</a>}
+        {/* Tech stack badge row */}
+        <div style={{ marginBottom: "0.7rem" }}>
+          {p.type.split(" · ").map(tech => (
+            <span key={tech} style={{
+              display: "inline-block", fontSize: 10, fontFamily: "monospace",
+              color: "rgba(255,255,255,0.35)", background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.07)", borderRadius: 4,
+              padding: "2px 8px", margin: "0 4px 4px 0", letterSpacing: "0.04em"
+            }}>{tech}</span>
+          ))}
         </div>
+        {/* Description */}
+        <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.42)", lineHeight: 1.75, margin: 0, maxWidth: 720 }}>{p.desc}</p>
       </div>
     </TiltCard>
   );
@@ -592,9 +696,11 @@ export default function App() {
         @media (max-width:768px) {
           .mobile-menu-btn { display:flex !important; align-items:center; }
           .nav-links { display:none !important; }
+          .avatar-wrap { transform:scale(0.78) !important; margin-bottom:-1rem !important; }
+          .hero-btns { justify-content:center !important; }
           .side-socials { display:none !important; }
-          .hero-section { padding:5rem 1.5rem 3rem !important; }
-          .hero-inner { flex-direction:column-reverse !important; gap:2rem !important; }
+          .hero-section { padding:4rem 1.5rem 3rem !important; }
+          .hero-inner { flex-direction:column !important; gap:2rem !important; align-items:center !important; text-align:center !important; }
           .about-grid { grid-template-columns:1fr !important; gap:2rem !important; }
           .skills-grid { grid-template-columns:1fr 1fr !important; }
           .stats-grid { grid-template-columns:1fr 1fr !important; }
@@ -674,7 +780,7 @@ export default function App() {
                 <p style={{ fontSize: "0.92rem", color: "rgba(232,232,240,0.42)", maxWidth: 480, lineHeight: 1.9, marginBottom: "2.8rem" }}>
                   Full-Stack Developer with experience building scalable web applications using Python, FastAPI, React.js, and Node.js. Skilled in designing REST APIs, optimizing SQL queries, and delivering end-to-end product features.
                 </p>
-                <div style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap" }}>
+                <div className="hero-btns" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap" }}>
                   <button className="btn-cyan" onClick={() => scrollTo("projects")}>View Projects</button>
                   <a href="https://ai-resume-analyzer-tuet.onrender.com" target="_blank" rel="noreferrer" className="btn-ghost">Live Project</a>
                   <a href="https://drive.google.com/file/d/1PEuAK9LEg8flKRgUPYbi0wOdSpA7Qx7U/view" target="_blank" rel="noreferrer" className="btn-green">Resume</a>
@@ -683,7 +789,7 @@ export default function App() {
               </Parallax>
             </div>
             {/* Avatar side */}
-            <Parallax speed={0.04} style={{ flexShrink: 0, animation: "avatarFloat 5s ease infinite" }}>
+            <Parallax speed={0.04} style={{ flexShrink: 0, animation: "avatarFloat 5s ease infinite" }} className="avatar-wrap">
               <Avatar />
             </Parallax>
           </div>
@@ -780,7 +886,7 @@ export default function App() {
           <h2 className="syne" style={{ fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "0.7rem", color: "#f0f0f8" }}>Featured Projects</h2>
           <p style={{ color: "rgba(232,232,240,0.38)", fontSize: "0.92rem", marginBottom: "2.5rem" }}>Real code I have written and shipped.</p>
         </Reveal>
-        <div style={{ border: "1px solid rgba(110,231,247,0.08)", borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1px", background: "rgba(110,231,247,0.06)", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(110,231,247,0.1)", backdropFilter: "blur(20px)" }}>
           {projects.map((p, i) => (<Reveal key={p.name} delay={i * 0.07}><ProjectRow p={p} /></Reveal>))}
         </div>
       </section>
