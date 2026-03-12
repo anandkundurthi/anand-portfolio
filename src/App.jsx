@@ -694,7 +694,7 @@ function ProjectRow({ p }) {
         }} />
         {/* Screenshot preview on hover */}
         {p.screenshot && hov && (
-          <div style={{
+          <div className="project-screenshot" style={{
             position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)",
             width: 180, height: 100, borderRadius: 8, overflow: "hidden",
             border: `1px solid ${p.color}44`, boxShadow: `0 8px 32px rgba(0,0,0,0.6), 0 0 20px ${p.color}22`,
@@ -1192,6 +1192,7 @@ function GitHubHeatmap() {
                     <div
                       key={di}
                       title={`${day.count} contribution${day.count !== 1 ? "s" : ""}`}
+                      className="heatmap-cell"
                       style={{
                         width: 12, height: 12, borderRadius: 2,
                         background: getColor(day.count),
@@ -1305,7 +1306,7 @@ function LookingFor() {
           </h2>
         </Reveal>
         <div style={{
-          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
           gap: "1px", background: "rgba(110,231,247,0.07)", borderRadius: 16,
           overflow: "hidden", border: "1px solid rgba(110,231,247,0.1)",
         }}>
@@ -1445,19 +1446,79 @@ export default function App() {
         [data-theme="light"] .section-label { color: #0891b2; }
         [data-theme="light"] .section-label::after { background: rgba(8,145,178,0.3); }
         @media (max-width:768px) {
+          /* ── NAV ── */
           .mobile-menu-btn { display:flex !important; align-items:center; }
           .nav-links { display:none !important; }
-          .avatar-wrap { transform:scale(0.78) !important; margin-bottom:-1rem !important; }
-          .hero-btns { justify-content:center !important; }
+          nav { padding:0.8rem 1.2rem !important; }
           .side-socials { display:none !important; }
-          .hero-section { padding:4rem 1.5rem 3rem !important; }
-          .hero-inner { flex-direction:column !important; gap:2rem !important; align-items:center !important; text-align:center !important; }
+
+          /* ── HERO ── */
+          .hero-section { padding:3rem 1.2rem 2.5rem !important; }
+          .hero-inner { flex-direction:column !important; gap:1.5rem !important; align-items:center !important; text-align:center !important; }
+          .avatar-wrap { transform:scale(0.72) !important; margin-bottom:-2rem !important; }
+          .hero-btns { justify-content:center !important; flex-wrap:wrap !important; gap:0.6rem !important; }
+          .hero-btns a, .hero-btns button { font-size:10px !important; padding:10px 16px !important; }
+
+          /* ── SECTIONS ── */
+          section { padding:3rem 1.2rem !important; }
+
+          /* ── ABOUT ── */
           .about-grid { grid-template-columns:1fr !important; gap:2rem !important; }
-          .skills-grid { grid-template-columns:1fr 1fr !important; }
-          .stats-grid { grid-template-columns:1fr 1fr !important; }
+          .stats-grid { grid-template-columns:1fr 1fr !important; gap:0.6rem !important; }
+
+          /* ── SKILLS ── */
+          .skills-grid { grid-template-columns:1fr !important; }
+          .skill-cell { padding:1.4rem 1rem !important; }
+
+          /* ── EDUCATION ── */
           .edu-grid { grid-template-columns:1fr !important; gap:2rem !important; }
-          section { padding:4rem 1.5rem !important; }
-          nav { padding:1rem 1.5rem !important; }
+
+          /* ── BUILDING TICKER ── */
+          .building-ticker { padding:0.6rem 1.2rem !important; }
+
+          /* ── ACHIEVEMENTS STRIP ── */
+          .achievements-strip { padding:1.5rem 1.2rem !important; flex-direction:row !important; flex-wrap:wrap !important; }
+          .achievements-strip > div { flex:1 1 80px !important; }
+
+          /* ── TECH STACK ── */
+          .tech-badge { padding:8px 12px !important; font-size:11px !important; }
+
+          /* ── LOOKING FOR ── */
+          .looking-grid { grid-template-columns:1fr !important; }
+
+          /* ── GITHUB HEATMAP ── */
+          .heatmap-cell { width:9px !important; height:9px !important; }
+
+          /* ── PROJECT ROWS ── */
+          .project-screenshot { display:none !important; }
+          .project-row-inner { flex-wrap:wrap !important; gap:0.6rem !important; }
+          .project-num { font-size:10px !important; }
+
+          /* ── CONTACT ── */
+          .contact-btns { flex-direction:column !important; align-items:stretch !important; }
+          .contact-btns a, .contact-btns button { text-align:center !important; justify-content:center !important; }
+
+          /* ── QUOTE BLOCK ── */
+          .quote-block { padding:2rem 1.4rem !important; }
+
+          /* ── BACK TO TOP ── */
+          .back-to-top { bottom:16px !important; right:16px !important; width:36px !important; height:36px !important; }
+
+          /* ── WAVE DIVIDERS ── */
+          svg { height:32px !important; }
+
+          /* ── TYPOGRAPHY ── */
+          h2 { font-size:clamp(1.6rem,7vw,2.4rem) !important; }
+          .section-label { font-size:9px !important; letter-spacing:0.18em !important; }
+        }
+
+        @media (max-width:480px) {
+          .avatar-wrap { transform:scale(0.65) !important; margin-bottom:-2.5rem !important; }
+          .hero-btns a, .hero-btns button { width:100% !important; justify-content:center !important; }
+          .stats-grid { grid-template-columns:1fr 1fr !important; }
+          .skills-grid { grid-template-columns:1fr !important; }
+          section { padding:2.5rem 1rem !important; }
+          nav { padding:0.7rem 1rem !important; }
         }
       `}</style>
 
@@ -1719,7 +1780,7 @@ export default function App() {
               Open to Full-Stack, Backend, and Frontend Developer roles.<br />Also open to internships, collaborations, and creative challenges.
             </p>
             {/* Direct links */}
-            <div style={{ display: "flex", gap: "0.8rem", justifyContent: "center", flexWrap: "wrap", marginBottom: "2.5rem" }}>
+            <div className="contact-btns" style={{ display: "flex", gap: "0.8rem", justifyContent: "center", flexWrap: "wrap", marginBottom: "2.5rem" }}>
               <a href="mailto:anandsarmak@gmail.com" className="btn-cyan">Send Email</a>
               <a href="https://www.linkedin.com/in/anand-venkata-raghava-sai-kundurthi-75914a358/" target="_blank" rel="noreferrer" className="btn-ghost">LinkedIn</a>
               <a href="https://github.com/anandkundurthi" target="_blank" rel="noreferrer" className="btn-ghost">GitHub</a>
