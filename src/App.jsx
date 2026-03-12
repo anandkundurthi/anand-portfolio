@@ -992,21 +992,40 @@ function SkillRing({ name, pct, delay = 0, color = "#6ee7f7" }) {
   }, [pct, delay]);
   const offset = CIRC - (progress / 100) * CIRC;
   return (
-    <div ref={ref} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-      <div style={{ position: "relative", width: SIZE, height: SIZE }}>
-        <svg width={SIZE} height={SIZE} style={{ transform: "rotate(-90deg)" }}>
-          <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={STROKE} />
-          <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none" stroke={color} strokeWidth={STROKE}
-            strokeDasharray={CIRC} strokeDashoffset={offset}
-            strokeLinecap="round"
-            style={{ transition: `stroke-dashoffset 1.4s ${delay}s cubic-bezier(0.22,1,0.36,1)`, filter: `drop-shadow(0 0 4px ${color}88)` }}
-          />
-        </svg>
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontFamily: "monospace", fontSize: 11, fontWeight: 700, color: progress > 0 ? color : "rgba(255,255,255,0.3)" }}>{progress > 0 ? pct+"%" : "0%"}</span>
+    <div ref={ref} className="skill-ring-wrap">
+      {/* Ring — shown on desktop */}
+      <div className="skill-ring-circle" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+        <div style={{ position: "relative", width: SIZE, height: SIZE }}>
+          <svg width={SIZE} height={SIZE} style={{ transform: "rotate(-90deg)" }}>
+            <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={STROKE} />
+            <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none" stroke={color} strokeWidth={STROKE}
+              strokeDasharray={CIRC} strokeDashoffset={offset}
+              strokeLinecap="round"
+              style={{ transition: `stroke-dashoffset 1.4s ${delay}s cubic-bezier(0.22,1,0.36,1)`, filter: `drop-shadow(0 0 4px ${color}88)` }}
+            />
+          </svg>
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontFamily: "monospace", fontSize: 11, fontWeight: 700, color: progress > 0 ? color : "rgba(255,255,255,0.3)" }}>{progress > 0 ? pct+"%" : "0%"}</span>
+          </div>
+        </div>
+        <span style={{ fontSize: 10, fontFamily: "monospace", color: "rgba(232,232,240,0.42)", letterSpacing: "0.05em", textAlign: "center", maxWidth: 72 }}>{name}</span>
+      </div>
+      {/* Bar — shown on mobile/medium */}
+      <div className="skill-ring-bar" style={{ display: "none", width: "100%", marginBottom: 8 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+          <span style={{ fontSize: 11, fontFamily: "monospace", color: "rgba(232,232,240,0.55)", letterSpacing: "0.04em" }}>{name}</span>
+          <span style={{ fontSize: 11, fontFamily: "monospace", color: color, fontWeight: 700 }}>{progress > 0 ? pct+"%" : "0%"}</span>
+        </div>
+        <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 4, overflow: "hidden" }}>
+          <div style={{
+            height: "100%", width: progress + "%",
+            background: `linear-gradient(90deg, ${color}, ${color}aa)`,
+            borderRadius: 4,
+            transition: `width 1.4s ${delay}s cubic-bezier(0.22,1,0.36,1)`,
+            boxShadow: progress > 0 ? `0 0 8px ${color}66` : "none",
+          }} />
         </div>
       </div>
-      <span style={{ fontSize: 10, fontFamily: "monospace", color: "rgba(232,232,240,0.42)", letterSpacing: "0.05em", textAlign: "center", maxWidth: 72 }}>{name}</span>
     </div>
   );
 }
@@ -1469,6 +1488,10 @@ export default function App() {
           /* ── SKILLS ── */
           .skills-grid { grid-template-columns:1fr !important; }
           .skill-cell { padding:1.4rem 1rem !important; }
+          .skill-ring-circle { display:none !important; }
+          .skill-ring-bar { display:block !important; }
+          .skill-ring-wrap { width:100% !important; }
+          .skill-cell > div:nth-child(3) { flex-direction:column !important; gap:4px !important; }
 
           /* ── EDUCATION ── */
           .edu-grid { grid-template-columns:1fr !important; gap:2rem !important; }
@@ -1512,6 +1535,12 @@ export default function App() {
           .section-label { font-size:9px !important; letter-spacing:0.18em !important; }
         }
 
+        @media (max-width:1024px) {
+          .skill-ring-circle { display:none !important; }
+          .skill-ring-bar { display:block !important; }
+          .skill-ring-wrap { width:100% !important; }
+          .skills-grid { grid-template-columns:1fr 1fr !important; }
+        }
         @media (max-width:480px) {
           .avatar-wrap { transform:scale(0.65) !important; margin-bottom:-2.5rem !important; }
           .hero-btns a, .hero-btns button { width:100% !important; justify-content:center !important; }
