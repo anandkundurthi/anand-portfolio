@@ -204,111 +204,163 @@ function ScrollProgress() {
 /* ─── THREE.JS HERO ─────────────────────────────────────────────────────── */
 function ThreeHero() {
   const canvasRef = useRef(null);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    let W, H, animId, nodes = [], edges = [], pulses = [];
 
-    const WORDS = [
-      "React","Python","FastAPI","Node.js","SQL","MongoDB","Express",
-      "REST API","JWT","Git","Linux","Figma","TypeScript","HTML","CSS",
-      "PostgreSQL","MySQL","Redux","JSON","async","useState","useEffect",
-      "fetch()","pip","npm","docker","API","CRUD","ORM","DSA","HTTP",
-      ".map()","class","import","export","def","return","await","const",
-    ];
+    // ── IntersectionObserver: fully stop when hero off screen ──
+    let isVisible = true;
+    const observer = new IntersectionObserver(
+      ([e]) => { isVisible = e.isIntersecting; },
+      { threshold: 0 }
+    );
+    observer.observe(canvas);
 
-    let W, H, animId;
+    const NODE_COUNT = 42;
+    const CONNECT_DIST = 160;
+    const LABELS = ["API","SQL","Git","AI","ML","DB","UI","UX","JS","TS",
+                    "CSS","DOM","JWT","ORM","CLI","SSH","CDN","DNS","CI","CD"];
+
+    const initNodes = () => {
+      nodes = Array.from({ length: NODE_COUNT }, (_, i) => ({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.28,
+        vy: (Math.random() - 0.5) * 0.28,
+        r: Math.random() > 0.82 ? 4.5 : 2.5,   // some bigger "hub" nodes
+        label: Math.random() > 0.55 ? LABELS[i % LABELS.length] : null,
+        pulse: 0,           // glow pulse phase
+        pulseSpeed: 0.02 + Math.random() * 0.02,
+        color: Math.random() > 0.5 ? "#6ee7f7" : "#a5f3c0",
+      }));
+      // Build static edge list — only pairs within CONNECT_DIST at init
+      edges = [];
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          if (Math.sqrt(dx*dx + dy*dy) < CONNECT_DIST) {
+            edges.push([i, j]);
+          }
+        }
+      }
+      // Spawn initial signal pulses
+      pulses = [];
+      for (let k = 0; k < 8; k++) spawnPulse();
+    };
+
+    const spawnPulse = () => {
+      if (edges.length === 0) return;
+      const edge = edges[Math.floor(Math.random() * edges.length)];
+      pulses.push({ edge, t: 0, speed: 0.004 + Math.random() * 0.006 });
+    };
 
     const resize = () => {
       W = canvas.parentElement.clientWidth;
       H = canvas.parentElement.clientHeight;
-      canvas.width = W;
+      canvas.width  = W;
       canvas.height = H;
-      initColumns();
+      initNodes();
     };
-
-    const COL_WIDTH = 120; // wider columns = fewer columns = less work
-    let columns = [];
-
-    const initColumns = () => {
-      const count = Math.floor(W / COL_WIDTH);
-      columns = Array.from({ length: count }, (_, i) => ({
-        x: i * COL_WIDTH + COL_WIDTH / 2,
-        y: Math.random() * -H,
-        speed: 0.7 + Math.random() * 1.1,
-        words: [],
-        trailLen: 5 + Math.floor(Math.random() * 5),
-        timer: 0,
-        interval: 16 + Math.floor(Math.random() * 20),
-        fontSize: 10 + Math.random() * 3,
-        active: Math.random() > 0.3,
-        pauseTimer: Math.random() * 180,
-      }));
-    };
-
     resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", resize, { passive: true });
 
-    // Use IntersectionObserver to fully stop rAF when hero not visible
-    let isVisible = true;
-    const observer = new IntersectionObserver(([e]) => { isVisible = e.isIntersecting; }, { threshold: 0 });
-    observer.observe(canvas);
-
+    // Throttle to 24fps — smooth enough, lightweight
     let lastFrame = 0;
-    const FPS = 20; // 20fps is plenty for ambient background
-    const INTERVAL = 1000 / FPS;
+    const INTERVAL = 1000 / 24;
 
     const draw = (now) => {
       animId = requestAnimationFrame(draw);
-      if (!isVisible) return; // fully paused when hero off screen
+      if (!isVisible) return;
       if (now - lastFrame < INTERVAL) return;
       lastFrame = now;
 
-      ctx.fillStyle = "rgba(6,8,16,0.18)";
-      ctx.fillRect(0, 0, W, H);
+      ctx.clearRect(0, 0, W, H);
 
-      columns.forEach(col => {
-        if (!col.active) {
-          col.pauseTimer--;
-          if (col.pauseTimer <= 0) {
-            col.active = true; col.y = -40; col.words = [];
-          }
+      // ── Move nodes (drift) ──
+      nodes.forEach(n => {
+        n.x += n.vx; n.y += n.vy;
+        if (n.x < 0) { n.x = 0; n.vx *= -1; }
+        if (n.x > W) { n.x = W; n.vx *= -1; }
+        if (n.y < 0) { n.y = 0; n.vy *= -1; }
+        if (n.y > H) { n.y = H; n.vy *= -1; }
+        n.pulse = (n.pulse + n.pulseSpeed) % (Math.PI * 2);
+      });
+
+      // ── Draw edges ──
+      edges.forEach(([i, j]) => {
+        const a = nodes[i], b = nodes[j];
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist > CONNECT_DIST) return; // nodes drifted apart
+        const alpha = (1 - dist / CONNECT_DIST) * 0.18;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.strokeStyle = `rgba(110,231,247,${alpha})`;
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+      });
+
+      // ── Draw signal pulses along edges ──
+      pulses.forEach((p, idx) => {
+        p.t += p.speed;
+        if (p.t >= 1) {
+          // respawn on a random edge
+          p.edge = edges[Math.floor(Math.random() * edges.length)];
+          p.t = 0;
+          p.speed = 0.004 + Math.random() * 0.006;
           return;
         }
-        col.timer++;
-        col.y += col.speed;
+        const [i, j] = p.edge;
+        const a = nodes[i], b = nodes[j];
+        const x = a.x + (b.x - a.x) * p.t;
+        const y = a.y + (b.y - a.y) * p.t;
+        // pulse dot
+        ctx.beginPath();
+        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(110,231,247,0.9)";
+        ctx.fill();
+        // fading trail
+        const tx = a.x + (b.x - a.x) * Math.max(0, p.t - 0.08);
+        const ty = a.y + (b.y - a.y) * Math.max(0, p.t - 0.08);
+        ctx.beginPath();
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = "rgba(110,231,247,0.5)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      });
 
-        if (col.timer % col.interval === 0) {
-          const word = WORDS[Math.floor(Math.random() * WORDS.length)];
-          col.words.unshift({ text: word, y: col.y });
-          if (col.words.length > col.trailLen) col.words.pop();
+      // Spawn new pulses occasionally
+      if (Math.random() < 0.04 && pulses.length < 14) spawnPulse();
+
+      // ── Draw nodes ──
+      nodes.forEach(n => {
+        const glow = 0.5 + 0.5 * Math.sin(n.pulse);
+        // outer glow ring for hub nodes
+        if (n.r > 3) {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r + 4 + glow * 3, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(110,231,247,${0.04 + glow * 0.06})`;
+          ctx.fill();
         }
-
-        col.words.forEach((w, idx) => {
-          const fade = 1 - idx / col.trailLen;
-          ctx.font = `${col.fontSize}px monospace`;
+        // node dot
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        ctx.fillStyle = n.color === "#6ee7f7"
+          ? `rgba(110,231,247,${0.55 + glow * 0.35})`
+          : `rgba(165,243,192,${0.45 + glow * 0.3})`;
+        ctx.fill();
+        // label on hub nodes
+        if (n.label && n.r > 3) {
+          ctx.font = "bold 9px monospace";
           ctx.textAlign = "center";
-          // No shadowBlur — it's a major GPU bottleneck
-          if (idx === 0) {
-            ctx.fillStyle = `rgba(210,255,255,${fade})`;
-          } else if (idx === 1) {
-            ctx.fillStyle = `rgba(110,231,247,${fade * 0.9})`;
-          } else {
-            const cyan = idx % 2 === 0;
-            ctx.fillStyle = cyan
-              ? `rgba(110,231,247,${fade * 0.5})`
-              : `rgba(165,243,192,${fade * 0.45})`;
-          }
-          ctx.fillText(w.text, col.x, w.y);
-        });
-
-        if (col.y > H + 200) {
-          col.active = false;
-          col.pauseTimer = 80 + Math.random() * 160;
-          col.speed = 0.7 + Math.random() * 1.1;
-          col.trailLen = 5 + Math.floor(Math.random() * 5);
-          col.interval = 16 + Math.floor(Math.random() * 20);
-          col.words = [];
+          ctx.fillStyle = `rgba(232,232,240,${0.25 + glow * 0.25})`;
+          ctx.fillText(n.label, n.x, n.y - n.r - 5);
         }
       });
     };
@@ -324,7 +376,7 @@ function ThreeHero() {
   return (
     <canvas
       ref={canvasRef}
-      style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.72, willChange: "transform" }}
+      style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.85, willChange: "transform" }}
     />
   );
 }
