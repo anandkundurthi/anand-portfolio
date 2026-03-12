@@ -1,9 +1,15 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
 /* ─── DATA ──────────────────────────────────────────────────────────────── */
 const AVATAR_URL = "https://raw.githubusercontent.com/anandkundurthi/anand-portfolio/main/src/assets/anand-avatar.png";
 
-const PHOTO_URL = "/avatar.jpg?v=3";
+const PHOTO_URL = "https://raw.githubusercontent.com/anandkundurthi/anand-portfolio/main/dist/avatar.jpg";
+const PHOTO_FALLBACKS = [
+  "https://raw.githubusercontent.com/anandkundurthi/anand-portfolio/main/dist/avatar.jpg",
+  "/avatar.jpg?v=4",
+  "https://raw.githubusercontent.com/anandkundurthi/anand-portfolio/main/public/avatar.jpg",
+  "https://raw.githubusercontent.com/anandkundurthi/anand-portfolio/main/src/assets/anand-avatar.png",
+];
 
 const projects = [
   { emoji: "📄", year: "2025", type: "Python · FastAPI · React.js · MySQL", name: "AI Resume Analyzer", desc: "Full-stack AI-powered resume analysis platform that evaluates resumes against job descriptions using skill-matching algorithms. Features PDF text extraction via PyPDF2, REST API scoring with FastAPI, session-based authentication, and an animated dashboard showing match scores and improvement suggestions.", github: "https://github.com/anandkundurthi/ai-resume-analyzer", live: "https://ai-resume-analyzer-tuet.onrender.com", color: "#6ee7f7", num: "01" },
@@ -221,7 +227,7 @@ function ThreeHero() {
       initColumns();
     };
 
-    const COL_WIDTH = 88;
+    const COL_WIDTH = 120; // wider columns = fewer columns = less work
     let columns = [];
 
     const initColumns = () => {
@@ -243,9 +249,22 @@ function ThreeHero() {
     resize();
     window.addEventListener("resize", resize);
 
-    const draw = () => {
+    // Use IntersectionObserver to fully stop rAF when hero not visible
+    let isVisible = true;
+    const observer = new IntersectionObserver(([e]) => { isVisible = e.isIntersecting; }, { threshold: 0 });
+    observer.observe(canvas);
+
+    let lastFrame = 0;
+    const FPS = 20; // 20fps is plenty for ambient background
+    const INTERVAL = 1000 / FPS;
+
+    const draw = (now) => {
       animId = requestAnimationFrame(draw);
-      ctx.fillStyle = "rgba(6,8,16,0.16)";
+      if (!isVisible) return; // fully paused when hero off screen
+      if (now - lastFrame < INTERVAL) return;
+      lastFrame = now;
+
+      ctx.fillStyle = "rgba(6,8,16,0.18)";
       ctx.fillRect(0, 0, W, H);
 
       columns.forEach(col => {
@@ -269,21 +288,18 @@ function ThreeHero() {
           const fade = 1 - idx / col.trailLen;
           ctx.font = `${col.fontSize}px monospace`;
           ctx.textAlign = "center";
+          // No shadowBlur — it's a major GPU bottleneck
           if (idx === 0) {
-            ctx.shadowBlur = 14; ctx.shadowColor = "#6ee7f7";
             ctx.fillStyle = `rgba(210,255,255,${fade})`;
           } else if (idx === 1) {
-            ctx.shadowBlur = 7; ctx.shadowColor = "#6ee7f7";
             ctx.fillStyle = `rgba(110,231,247,${fade * 0.9})`;
           } else {
-            ctx.shadowBlur = 0;
             const cyan = idx % 2 === 0;
             ctx.fillStyle = cyan
               ? `rgba(110,231,247,${fade * 0.5})`
               : `rgba(165,243,192,${fade * 0.45})`;
           }
           ctx.fillText(w.text, col.x, w.y);
-          ctx.shadowBlur = 0;
         });
 
         if (col.y > H + 200) {
@@ -297,86 +313,48 @@ function ThreeHero() {
       });
     };
 
-    draw();
+    draw(0);
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", resize);
+      observer.disconnect();
     };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.72 }}
+      style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.72, willChange: "transform" }}
     />
   );
 }
 
 /* ─── PARTICLE FIELD ────────────────────────────────────────────────────── */
-function ParticleField() {
-  const canvasRef = useRef(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    let W = window.innerWidth, H = window.innerHeight;
-    canvas.width = W; canvas.height = H;
-    let mouse = { x: W / 2, y: H / 2 };
-    const COUNT = 80;
-    const particles = Array.from({ length: COUNT }, () => ({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4, r: Math.random() * 1.5 + 0.5, opacity: Math.random() * 0.5 + 0.1 }));
-    const onMouse = (e) => { mouse.x = e.clientX; mouse.y = e.clientY; };
-    const onResize = () => { W = window.innerWidth; H = window.innerHeight; canvas.width = W; canvas.height = H; };
-    window.addEventListener("mousemove", onMouse);
-    window.addEventListener("resize", onResize);
-    let animId;
-    const draw = () => {
-      animId = requestAnimationFrame(draw);
-      ctx.clearRect(0, 0, W, H);
-      particles.forEach(p => {
-        const dx = p.x - mouse.x, dy = p.y - mouse.y, dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 120) { p.vx += dx / dist * 0.06; p.vy += dy / dist * 0.06; }
-        p.vx *= 0.99; p.vy *= 0.99;
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
-        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(110,231,247,${p.opacity})`; ctx.fill();
-      });
-      for (let i = 0; i < COUNT; i++) for (let j = i + 1; j < COUNT; j++) {
-        const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y, d = Math.sqrt(dx * dx + dy * dy);
-        if (d < 110) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(110,231,247,${0.12 * (1 - d / 110)})`; ctx.lineWidth = 0.5; ctx.stroke(); }
-      }
-    };
-    draw();
-    return () => { cancelAnimationFrame(animId); window.removeEventListener("mousemove", onMouse); window.removeEventListener("resize", onResize); };
-  }, []);
-  return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.65 }} />;
-}
+/* ParticleField removed for performance */
 
 /* ─── TILT CARD ─────────────────────────────────────────────────────────── */
 function TiltCard({ children, color }) {
   const ref = useRef(null);
-  const [tiltStyle, setTiltStyle] = useState({});
+  // Use direct DOM manipulation instead of setState to avoid React re-renders on every mousemove
   const onMove = useCallback((e) => {
-    const rect = ref.current.getBoundingClientRect();
-    const rotX = ((e.clientY - rect.top - rect.height / 2) / rect.height) * -10;
-    const rotY = ((e.clientX - rect.left - rect.width / 2) / rect.width) * 10;
-    setTiltStyle({ transform: `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.02,1.02,1.02)`, boxShadow: `0 20px 60px rgba(0,0,0,0.5), 0 0 30px ${color}22`, transition: "box-shadow 0.1s" });
+    const el = ref.current; if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const rotX = ((e.clientY - rect.top - rect.height / 2) / rect.height) * -8;
+    const rotY = ((e.clientX - rect.left - rect.width / 2) / rect.width) * 8;
+    el.style.transform = `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.015,1.015,1.015)`;
+    el.style.boxShadow = `0 20px 60px rgba(0,0,0,0.4), 0 0 24px ${color}22`;
+    el.style.transition = "box-shadow 0.1s";
   }, [color]);
-  const onLeave = useCallback(() => setTiltStyle({ transform: "perspective(800px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)", transition: "all 0.5s cubic-bezier(0.23,1,0.32,1)" }), []);
-  return <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} style={{ transformStyle: "preserve-3d", willChange: "transform", ...tiltStyle }}>{children}</div>;
+  const onLeave = useCallback(() => {
+    const el = ref.current; if (!el) return;
+    el.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
+    el.style.transition = "all 0.5s cubic-bezier(0.23,1,0.32,1)";
+    el.style.boxShadow = "none";
+  }, []);
+  return <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} style={{ transformStyle: "preserve-3d", willChange: "transform" }}>{children}</div>;
 }
 
-/* ─── PARALLAX ──────────────────────────────────────────────────────────── */
-function Parallax({ children, speed = 0.15, style: s }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const el = ref.current;
-    const fn = () => { const rect = el.getBoundingClientRect(); el.style.transform = `translateY(${(rect.top + rect.height / 2 - window.innerHeight / 2) * speed}px)`; };
-    window.addEventListener("scroll", fn, { passive: true }); fn();
-    return () => window.removeEventListener("scroll", fn);
-  }, [speed]);
-  return <div ref={ref} style={{ willChange: "transform", ...s }}>{children}</div>;
-}
+/* Parallax removed for performance */
 
 /* ─── HELPERS ───────────────────────────────────────────────────────────── */
 function TypingText() {
@@ -433,106 +411,129 @@ function Clock() {
 function CustomCursor() {
   const dot = useRef(null);
   const ring = useRef(null);
-  const trailsRef = useRef([]);
-  const pos = useRef({ x: 0, y: 0 });
-  const ringPos = useRef({ x: 0, y: 0 });
-  const TRAIL_COUNT = 12;
+  const pos = useRef({ x: -100, y: -100 });
+  const ringPos = useRef({ x: -100, y: -100 });
+  // Cache magnetic buttons once — never querySelectorAll in mousemove
+  const btnsRef = useRef([]);
 
   useEffect(() => {
     const lerp = (a, b, t) => a + (b - a) * t;
-    const trail = Array.from({ length: TRAIL_COUNT }, (_, i) => ({
-      x: 0, y: 0, el: trailsRef.current[i]
-    }));
+
+    // Cache all magnetic buttons once on mount + re-cache every 2s for dynamic ones
+    const cacheBtns = () => {
+      btnsRef.current = Array.from(document.querySelectorAll(".btn-cyan, .btn-ghost, .btn-green, .nav-btn"));
+    };
+    cacheBtns();
+    const cacheInterval = setInterval(cacheBtns, 2000);
 
     const onMove = (e) => {
-      pos.current = { x: e.clientX, y: e.clientY };
-      if (dot.current) { dot.current.style.left = e.clientX + "px"; dot.current.style.top = e.clientY + "px"; }
-      // Magnetic buttons
-      document.querySelectorAll(".btn-cyan, .btn-ghost, .btn-green, .nav-btn").forEach(btn => {
+      const x = e.clientX, y = e.clientY;
+      pos.current = { x, y };
+      // Dot follows mouse instantly via direct style — no lerp needed
+      if (dot.current) {
+        dot.current.style.transform = `translate(${x - 3}px, ${y - 3}px)`;
+      }
+      // Magnetic pull on cached buttons — no DOM query here
+      btnsRef.current.forEach(btn => {
         const r = btn.getBoundingClientRect();
         const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-        const dx = e.clientX - cx, dy = e.clientY - cy;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const threshold = 80;
-        if (dist < threshold) {
-          const pull = (1 - dist / threshold) * 0.35;
+        const dx = x - cx, dy = y - cy;
+        const distSq = dx * dx + dy * dy;
+        if (distSq < 6400) { // 80^2 — avoid sqrt
+          const dist = Math.sqrt(distSq);
+          const pull = (1 - dist / 80) * 0.3;
           btn.style.transform = `translate(${dx * pull}px, ${dy * pull}px)`;
-        } else {
-          btn.style.transform = "translate(0px, 0px)";
+        } else if (btn._pulled) {
+          btn.style.transform = "";
+          btn._pulled = false;
         }
+        btn._pulled = distSq < 6400;
       });
     };
-    window.addEventListener("mousemove", onMove);
+
+    // passive: true so browser never waits for JS before scrolling
+    window.addEventListener("mousemove", onMove, { passive: true });
 
     let animId;
     const animate = () => {
       animId = requestAnimationFrame(animate);
-      ringPos.current.x = lerp(ringPos.current.x, pos.current.x, 0.1);
-      ringPos.current.y = lerp(ringPos.current.y, pos.current.y, 0.1);
-      if (ring.current) { ring.current.style.left = ringPos.current.x + "px"; ring.current.style.top = ringPos.current.y + "px"; }
-      // Update trail positions
-      let prevX = pos.current.x, prevY = pos.current.y;
-      trail.forEach((t, i) => {
-        t.x = lerp(t.x, prevX, 0.45 - i * 0.025);
-        t.y = lerp(t.y, prevY, 0.45 - i * 0.025);
-        if (t.el) { t.el.style.left = t.x + "px"; t.el.style.top = t.y + "px"; t.el.style.opacity = (1 - i / TRAIL_COUNT) * 0.35; }
-        prevX = t.x; prevY = t.y;
-      });
+      // Ring lerps smoothly behind cursor
+      ringPos.current.x = lerp(ringPos.current.x, pos.current.x, 0.12);
+      ringPos.current.y = lerp(ringPos.current.y, pos.current.y, 0.12);
+      if (ring.current) {
+        ring.current.style.transform = `translate(${ringPos.current.x - 18}px, ${ringPos.current.y - 18}px)`;
+      }
     };
     animate();
 
     return () => {
       window.removeEventListener("mousemove", onMove);
       cancelAnimationFrame(animId);
-      document.querySelectorAll(".btn-cyan, .btn-ghost, .btn-green, .nav-btn").forEach(btn => { btn.style.transform = ""; });
+      clearInterval(cacheInterval);
+      btnsRef.current.forEach(btn => { btn.style.transform = ""; });
     };
   }, []);
 
   return (
     <>
-      {/* Trail dots */}
-      {Array.from({ length: TRAIL_COUNT }, (_, i) => (
-        <div key={i} ref={el => trailsRef.current[i] = el} style={{
-          position: "fixed", width: 6 - i * 0.35, height: 6 - i * 0.35,
-          background: i < 4 ? "#6ee7f7" : "#a5f3c0",
-          borderRadius: "50%", pointerEvents: "none", zIndex: 9996,
-          transform: "translate(-50%,-50%)", transition: "opacity 0.1s",
-          boxShadow: i === 0 ? "0 0 6px rgba(110,231,247,0.6)" : "none"
-        }} />
-      ))}
-      {/* Main dot */}
-      <div ref={dot} style={{ position: "fixed", width: 7, height: 7, background: "#6ee7f7", borderRadius: "50%", pointerEvents: "none", zIndex: 9999, transform: "translate(-50%,-50%)", boxShadow: "0 0 12px rgba(110,231,247,1)" }} />
-      {/* Outer ring */}
-      <div ref={ring} style={{ position: "fixed", width: 36, height: 36, border: "1px solid rgba(110,231,247,0.4)", borderRadius: "50%", pointerEvents: "none", zIndex: 9998, transform: "translate(-50%,-50%)" }} />
+      {/* Main dot — no transform:translate(-50%,-50%), use offset instead */}
+      <div ref={dot} style={{
+        position: "fixed", top: 0, left: 0,
+        width: 6, height: 6, background: "#6ee7f7",
+        borderRadius: "50%", pointerEvents: "none", zIndex: 9999,
+        boxShadow: "0 0 10px rgba(110,231,247,0.9)",
+        willChange: "transform",
+      }} />
+      {/* Lagging ring */}
+      <div ref={ring} style={{
+        position: "fixed", top: 0, left: 0,
+        width: 36, height: 36,
+        border: "1.5px solid rgba(110,231,247,0.45)",
+        borderRadius: "50%", pointerEvents: "none", zIndex: 9998,
+        willChange: "transform",
+      }} />
     </>
   );
 }
 
 /* ─── AVATAR ────────────────────────────────────────────────────────────── */
 function Avatar() {
+  const gradRef = useRef(null); // kept for compatibility
   return (
     <div style={{ position: "relative", flexShrink: 0 }}>
-      {/* Rotating border rings */}
-      <div style={{ position: "absolute", inset: -16, borderRadius: "50%", border: "1px solid rgba(110,231,247,0.15)", animation: "spin 12s linear infinite" }} />
-      <div style={{ position: "absolute", inset: -8, borderRadius: "50%", border: "1px dashed rgba(110,231,247,0.1)", animation: "spin 8s linear infinite reverse" }} />
-      {/* Glow behind */}
-      <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "radial-gradient(circle, rgba(110,231,247,0.15) 0%, transparent 70%)", filter: "blur(20px)" }} />
-      {/* Photo */}
-      <div style={{ width: 220, height: 220, borderRadius: "50%", overflow: "hidden", border: "2px solid rgba(110,231,247,0.3)", position: "relative", boxShadow: "0 0 40px rgba(110,231,247,0.2), 0 0 80px rgba(110,231,247,0.08)" }}>
+      {/* Animated gradient halo */}
+      <div ref={gradRef} style={{
+        position: "absolute", inset: -4, borderRadius: "50%",
+        background: "conic-gradient(#6ee7f7, #a5f3c0, #f0abfc, #fde68a, #6ee7f7)",
+        filter: "blur(2px)", zIndex: 0,
+        animation: "rotateBorder 4s linear infinite",
+      }} />
+      {/* Outer glow orb */}
+      <div style={{ position: "absolute", inset: -24, borderRadius: "50%", background: "radial-gradient(circle, rgba(110,231,247,0.12) 0%, transparent 70%)", filter: "blur(18px)", zIndex: 0, animation: "glowPulse 3s ease infinite" }} />
+      {/* Rotating dashed ring */}
+      <div style={{ position: "absolute", inset: -14, borderRadius: "50%", border: "1px dashed rgba(110,231,247,0.18)", animation: "spin 10s linear infinite reverse", zIndex: 0 }} />
+      {/* Photo circle — sits on top of gradient */}
+      <div style={{ width: 220, height: 220, borderRadius: "50%", overflow: "hidden", border: "3px solid #060810", position: "relative", zIndex: 1, boxShadow: "0 0 40px rgba(110,231,247,0.2), 0 0 80px rgba(110,231,247,0.08)" }}>
         <img
           src={PHOTO_URL}
           alt="Anand Kundurthi"
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top", filter: "brightness(1.05) contrast(1.05)" }}
           onError={(e) => {
-            // Fallback: initials avatar
-            e.target.style.display = "none";
-            e.target.parentNode.style.background = "linear-gradient(135deg, #0d1117, #111827)";
-            e.target.parentNode.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;color:#6ee7f7;text-shadow:0 0 30px rgba(110,231,247,0.6)">AK</div>`;
+            const img = e.target;
+            const tried = parseInt(img.dataset.tried || "0");
+            if (tried < PHOTO_FALLBACKS.length - 1) {
+              img.dataset.tried = tried + 1;
+              img.src = PHOTO_FALLBACKS[tried + 1];
+            } else {
+              img.style.display = "none";
+              img.parentNode.style.background = "linear-gradient(135deg, #0d1117, #111827)";
+              img.parentNode.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;color:#6ee7f7;text-shadow:0 0 30px rgba(110,231,247,0.6)">AK</div>`;
+            }
           }}
         />
       </div>
       {/* Status badge */}
-      <div style={{ position: "absolute", bottom: 12, right: 4, background: "rgba(6,8,16,0.9)", border: "1px solid rgba(74,222,128,0.4)", borderRadius: 20, padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, backdropFilter: "blur(10px)" }}>
+      <div style={{ position: "absolute", bottom: 12, right: 4, zIndex: 2, background: "rgba(6,8,16,0.9)", border: "1px solid rgba(74,222,128,0.4)", borderRadius: 20, padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, backdropFilter: "blur(10px)" }}>
         <div style={{ width: 6, height: 6, background: "#4ade80", borderRadius: "50%", animation: "pulseGreen 2s infinite" }} />
         <span style={{ fontSize: 9, color: "#4ade80", fontFamily: "monospace", letterSpacing: "0.08em", whiteSpace: "nowrap" }}>Available</span>
       </div>
@@ -687,10 +688,306 @@ function ProjectRow({ p }) {
   );
 }
 
+
+/* ─── TOAST SYSTEM ──────────────────────────────────────────────────────── */
+const ToastContext = React.createContext(null);
+function ToastProvider({ children }) {
+  const [toasts, setToasts] = useState([]);
+  const addToast = useCallback((msg, type = "success") => {
+    const id = Date.now();
+    setToasts(t => [...t, { id, msg, type }]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000);
+  }, []);
+  return (
+    <ToastContext.Provider value={addToast}>
+      {children}
+      <div style={{ position: "fixed", bottom: 28, right: 28, zIndex: 9997, display: "flex", flexDirection: "column", gap: 10 }}>
+        {toasts.map(t => (
+          <div key={t.id} style={{
+            display: "flex", alignItems: "center", gap: 10,
+            background: t.type === "success" ? "rgba(6,8,16,0.95)" : "rgba(6,8,16,0.95)",
+            border: `1px solid ${t.type === "success" ? "rgba(110,231,247,0.35)" : "rgba(251,191,36,0.35)"}`,
+            borderRadius: 8, padding: "12px 18px",
+            backdropFilter: "blur(16px)",
+            boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 20px ${t.type === "success" ? "rgba(110,231,247,0.1)" : "rgba(251,191,36,0.1)"}`,
+            animation: "toastSlide 0.35s cubic-bezier(0.22,1,0.36,1)",
+            minWidth: 220,
+          }}>
+            <span style={{ fontSize: 15 }}>{t.type === "success" ? "✓" : "⚡"}</span>
+            <span style={{ fontSize: 12, color: "#e8e8f0", fontFamily: "monospace", letterSpacing: "0.04em" }}>{t.msg}</span>
+          </div>
+        ))}
+      </div>
+    </ToastContext.Provider>
+  );
+}
+const useToast = () => React.useContext(ToastContext);
+
+/* ─── CLICK RIPPLE ───────────────────────────────────────────────────────── */
+function ClickRipple() {
+  const [ripples, setRipples] = useState([]);
+  useEffect(() => {
+    const onClick = (e) => {
+      const id = Date.now() + Math.random();
+      setRipples(r => [...r, { id, x: e.clientX, y: e.clientY }]);
+      setTimeout(() => setRipples(r => r.filter(x => x.id !== id)), 800);
+    };
+    window.addEventListener("click", onClick);
+    return () => window.removeEventListener("click", onClick);
+  }, []);
+  return (
+    <>
+      {ripples.map(r => (
+        <div key={r.id} style={{
+          position: "fixed", left: r.x, top: r.y, width: 0, height: 0,
+          pointerEvents: "none", zIndex: 9995,
+          border: "1.5px solid rgba(110,231,247,0.8)",
+          borderRadius: "50%",
+          transform: "translate(-50%,-50%)",
+          animation: "rippleOut 0.75s cubic-bezier(0.22,1,0.36,1) forwards",
+        }} />
+      ))}
+    </>
+  );
+}
+
+/* ─── SPOTLIGHT ──────────────────────────────────────────────────────────── */
+function Spotlight() {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    const onMove = (e) => {
+      if (el) { el.style.left = e.clientX + "px"; el.style.top = e.clientY + "px"; }
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+  return (
+    <div ref={ref} style={{
+      position: "fixed", width: 500, height: 500,
+      borderRadius: "50%", pointerEvents: "none", zIndex: 1,
+      transform: "translate(-50%,-50%)",
+      background: "radial-gradient(circle, rgba(110,231,247,0.04) 0%, transparent 65%)",
+      transition: "left 0.08s linear, top 0.08s linear",
+    }} />
+  );
+}
+
+/* ─── HIRE EASTER EGG ────────────────────────────────────────────────────── */
+function HireEasterEgg() {
+  const [typed, setTyped] = useState("");
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      setTyped(t => {
+        const next = (t + e.key).slice(-4);
+        if (next === "hire") { setShow(true); setTimeout(() => setShow(false), 4000); }
+        return next;
+      });
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+  if (!show) return null;
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9993, pointerEvents: "none",
+      display: "flex", alignItems: "center", justifyContent: "center",
+    }}>
+      <div style={{
+        background: "rgba(6,8,16,0.97)", border: "1px solid rgba(110,231,247,0.4)",
+        borderRadius: 16, padding: "2.5rem 4rem", textAlign: "center",
+        backdropFilter: "blur(20px)", boxShadow: "0 0 80px rgba(110,231,247,0.15)",
+        animation: "toastSlide 0.4s cubic-bezier(0.22,1,0.36,1)",
+      }}>
+        <div style={{ fontSize: "3rem", marginBottom: "0.8rem" }}>🎉</div>
+        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.8rem", color: "#6ee7f7", marginBottom: "0.5rem" }}>
+          Great taste!
+        </div>
+        <div style={{ fontFamily: "monospace", fontSize: 12, color: "rgba(232,232,240,0.5)", letterSpacing: "0.08em" }}>
+          You typed <span style={{ color: "#6ee7f7" }}>"hire"</span> — scroll to Contact ↓
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+
+
+/* ─── CURRENTLY BUILDING TICKER ─────────────────────────────────────────── */
+function BuildingTicker() {
+  const items = [
+    "⚡ Currently Building: AI Resume Analyzer v2 with GPT integration",
+    "🔧 Learning: Advanced System Design patterns",
+    "📦 Exploring: Docker & containerized deployments",
+    "🌱 Growing: TypeScript & Next.js skills",
+  ];
+  const [idx, setIdx] = useState(0);
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const t = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => { setIdx(i => (i + 1) % items.length); setVisible(true); }, 400);
+    }, 3500);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div style={{
+      background: "rgba(110,231,247,0.04)", borderTop: "1px solid rgba(110,231,247,0.08)",
+      borderBottom: "1px solid rgba(110,231,247,0.08)", padding: "0.65rem 4rem",
+      display: "flex", alignItems: "center", gap: "1rem", overflow: "hidden",
+      position: "relative", zIndex: 2,
+    }}>
+      <span style={{ fontSize: 9, fontFamily: "monospace", letterSpacing: "0.18em", color: "#4ade80", textTransform: "uppercase", whiteSpace: "nowrap", flexShrink: 0 }}>
+        ● LIVE
+      </span>
+      <div style={{ width: 1, height: 14, background: "rgba(110,231,247,0.2)", flexShrink: 0 }} />
+      <span style={{
+        fontSize: 11, fontFamily: "monospace", color: "rgba(232,232,240,0.55)",
+        letterSpacing: "0.05em", opacity: visible ? 1 : 0,
+        transition: "opacity 0.4s ease",
+      }}>{items[idx]}</span>
+    </div>
+  );
+}
+
+/* ─── ACHIEVEMENTS STRIP ─────────────────────────────────────────────────── */
+function AchievementsStrip() {
+  const items = [
+    { icon: "🚀", val: "5+", label: "Projects Shipped" },
+    { icon: "⭐", val: "4mo", label: "Industry XP" },
+    { icon: "📜", val: "5+", label: "Certifications" },
+    { icon: "💻", val: "6+", label: "GitHub Repos" },
+    { icon: "🛠️", val: "10+", label: "Tech Stack" },
+    { icon: "🎯", val: "100%", label: "Passion to Build" },
+  ];
+  return (
+    <div style={{
+      background: "linear-gradient(135deg, rgba(110,231,247,0.04), rgba(165,243,192,0.03))",
+      borderTop: "1px solid rgba(110,231,247,0.08)", borderBottom: "1px solid rgba(110,231,247,0.08)",
+      padding: "2rem 4rem", display: "flex", justifyContent: "space-between",
+      flexWrap: "wrap", gap: "1.5rem", position: "relative", zIndex: 2,
+    }}>
+      {items.map((item, i) => (
+        <div key={i} style={{ textAlign: "center", flex: "1 1 120px" }}>
+          <div style={{ fontSize: "1.4rem", marginBottom: "0.3rem" }}>{item.icon}</div>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.5rem", color: "#6ee7f7", textShadow: "0 0 16px rgba(110,231,247,0.4)" }}>{item.val}</div>
+          <div style={{ fontSize: 10, fontFamily: "monospace", color: "rgba(232,232,240,0.35)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{item.label}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── QUOTE BLOCK ────────────────────────────────────────────────────────── */
+function QuoteBlock() {
+  return (
+    <div style={{ padding: "5rem 4rem", position: "relative", zIndex: 2, background: "rgba(255,255,255,0.008)" }}>
+      <div style={{
+        maxWidth: 740, margin: "0 auto", textAlign: "center",
+        border: "1px solid rgba(110,231,247,0.1)", borderRadius: 16,
+        padding: "3rem 3.5rem", background: "rgba(110,231,247,0.02)",
+        backdropFilter: "blur(10px)", position: "relative",
+      }}>
+        <div style={{ fontSize: "3rem", lineHeight: 1, marginBottom: "1.5rem", opacity: 0.3, color: "#6ee7f7", fontFamily: "Georgia, serif" }}>"</div>
+        <p style={{ fontSize: "1.1rem", fontFamily: "'Syne', sans-serif", fontWeight: 600, color: "#f0f0f8", lineHeight: 1.7, marginBottom: "1.8rem", letterSpacing: "-0.01em" }}>
+          I don't just write code — I craft experiences. Every API endpoint, every UI component, every database query is a chance to build something that actually matters to people.
+        </p>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #6ee7f7, #a5f3c0)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "#060810", fontFamily: "'Syne', sans-serif" }}>AK</div>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#f0f0f8", fontFamily: "'Syne', sans-serif" }}>Anand Kundurthi</div>
+            <div style={{ fontSize: 10, color: "rgba(110,231,247,0.5)", fontFamily: "monospace", letterSpacing: "0.08em" }}>UI/UX Intern · Diigoo Tech</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── CIRCULAR SKILL RING ────────────────────────────────────────────────── */
+function SkillRing({ name, pct, delay = 0, color = "#6ee7f7" }) {
+  const [progress, setProgress] = useState(0);
+  const ref = useRef(null);
+  const started = useRef(false);
+  const SIZE = 72, STROKE = 5, R = (SIZE - STROKE * 2) / 2;
+  const CIRC = 2 * Math.PI * R;
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !started.current) {
+        started.current = true;
+        setTimeout(() => setProgress(pct), delay * 1000);
+      }
+    }, { threshold: 0.3 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [pct, delay]);
+  const offset = CIRC - (progress / 100) * CIRC;
+  return (
+    <div ref={ref} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+      <div style={{ position: "relative", width: SIZE, height: SIZE }}>
+        <svg width={SIZE} height={SIZE} style={{ transform: "rotate(-90deg)" }}>
+          <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={STROKE} />
+          <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none" stroke={color} strokeWidth={STROKE}
+            strokeDasharray={CIRC} strokeDashoffset={offset}
+            strokeLinecap="round"
+            style={{ transition: `stroke-dashoffset 1.4s ${delay}s cubic-bezier(0.22,1,0.36,1)`, filter: `drop-shadow(0 0 4px ${color}88)` }}
+          />
+        </svg>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontFamily: "monospace", fontSize: 11, fontWeight: 700, color: progress > 0 ? color : "rgba(255,255,255,0.3)" }}>{progress > 0 ? pct+"%" : "0%"}</span>
+        </div>
+      </div>
+      <span style={{ fontSize: 10, fontFamily: "monospace", color: "rgba(232,232,240,0.42)", letterSpacing: "0.05em", textAlign: "center", maxWidth: 72 }}>{name}</span>
+    </div>
+  );
+}
+
+/* ─── PROJECT FILTER ─────────────────────────────────────────────────────── */
+function ProjectFilter({ active, onChange }) {
+  const filters = ["All", "Python", "React", "SQL", "JavaScript", "Node.js"];
+  return (
+    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: "2rem" }}>
+      {filters.map(f => (
+        <button key={f} onClick={() => onChange(f)}
+          style={{
+            background: active === f ? "rgba(110,231,247,0.12)" : "transparent",
+            border: `1px solid ${active === f ? "rgba(110,231,247,0.5)" : "rgba(255,255,255,0.1)"}`,
+            color: active === f ? "#6ee7f7" : "rgba(232,232,240,0.4)",
+            borderRadius: 20, padding: "5px 16px", fontSize: 11, fontFamily: "monospace",
+            letterSpacing: "0.06em", cursor: "none", transition: "all 0.2s",
+            boxShadow: active === f ? "0 0 12px rgba(110,231,247,0.15)" : "none",
+          }}>
+          {f}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ─── COPY CONTACT BTN ───────────────────────────────────────────────────── */
+function CopyContactBtn() {
+  const toast = useToast();
+  const copy = () => {
+    const info = "Anand Kundurthi | anandsarmak@gmail.com | +91 7093254137 | linkedin.com/in/anand-venkata-raghava-sai-kundurthi-75914a358";
+    navigator.clipboard.writeText(info).then(() => toast("Contact info copied to clipboard!", "success")).catch(() => toast("Copy failed — use email link", "warn"));
+  };
+  return (
+    <button onClick={copy} className="btn-ghost" style={{ cursor: "none" }}>
+      📋 Copy Info
+    </button>
+  );
+}
+
 /* ─── MAIN APP ──────────────────────────────────────────────────────────── */
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [projectFilter, setProjectFilter] = useState("All");
+  const filteredProjects = projects.filter(p => projectFilter === "All" || p.type.includes(projectFilter));
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", fn, { passive: true });
@@ -699,6 +996,7 @@ export default function App() {
   const scrollTo = (id) => { const el = document.getElementById(id.toLowerCase()); if (el) el.scrollIntoView({ behavior: "smooth" }); };
 
   return (
+    <ToastProvider>
     <div style={{ background: "#060810", color: "#e8e8f0", fontFamily: "'DM Sans', sans-serif", minHeight: "100vh", overflowX: "hidden" }}>
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -714,6 +1012,9 @@ export default function App() {
         @keyframes glowPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
         @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes avatarFloat { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-10px)} }
+        @keyframes toastSlide { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes rippleOut { from{width:0;height:0;opacity:0.8} to{width:120px;height:120px;opacity:0} }
+        @keyframes rotateBorder { from{filter:blur(2px) hue-rotate(0deg)} to{filter:blur(2px) hue-rotate(360deg)} }
         .syne { font-family: 'Syne', sans-serif !important; }
         .nav-btn { background:none; border:none; color:rgba(232,232,240,0.45); font-size:11px; letter-spacing:0.15em; text-transform:uppercase; font-family:'DM Sans',sans-serif; transition:color 0.2s; padding:6px 0; cursor:none; }
         .nav-btn:hover { color:#6ee7f7; }
@@ -729,11 +1030,11 @@ export default function App() {
         .stat-card:hover { border-color:rgba(110,231,247,0.4); transform:translateY(-6px); box-shadow:0 12px 40px rgba(110,231,247,0.1); }
         .skill-pill { display:inline-block; border:1px solid rgba(110,231,247,0.15); color:rgba(232,232,240,0.5); padding:4px 12px; border-radius:3px; font-size:11px; margin:3px; letter-spacing:0.05em; font-family:monospace; transition:all 0.2s; }
         .skill-pill:hover { border-color:#6ee7f7; color:#6ee7f7; background:rgba(110,231,247,0.07); box-shadow:0 0 10px rgba(110,231,247,0.2); }
-        .skill-cell { background:#060810; padding:1.8rem; transition:background 0.3s; position:relative; overflow:hidden; }
+        .skill-cell { contain: layout style; background:#060810; padding:1.8rem; transition:background 0.3s; position:relative; overflow:hidden; }
         .skill-cell::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(110,231,247,0.06), transparent 60%); opacity:0; transition:opacity 0.3s; pointer-events:none; }
         .skill-cell:hover::after { opacity:1; }
         .skill-cell:hover { background:rgba(110,231,247,0.03); }
-        .cert-row { display:flex; align-items:center; gap:1.2rem; padding:1rem 1.2rem; border-bottom:1px solid rgba(255,255,255,0.05); transition:all 0.25s; }
+        .cert-row { contain: layout; display:flex; align-items:center; gap:1.2rem; padding:1rem 1.2rem; border-bottom:1px solid rgba(255,255,255,0.05); transition:all 0.25s; }
         .cert-row:last-child { border-bottom:none; }
         .cert-row:hover { background:rgba(110,231,247,0.04); padding-left:1.8rem; }
         .exp-block { border-left:1px solid rgba(255,255,255,0.08); padding-left:1.6rem; margin-bottom:2.2rem; position:relative; }
@@ -771,8 +1072,10 @@ export default function App() {
 
       {!loaded && <PageLoader onDone={() => setLoaded(true)} />}
       <CustomCursor />
+      <ClickRipple />
+      <Spotlight />
+      <HireEasterEgg />
       <ScrollProgress />
-      <ParticleField />
 
       {/* Ambient orbs */}
       <div style={{ position: "fixed", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(110,231,247,0.04) 0%, transparent 70%)", pointerEvents: "none", zIndex: 1, animation: "floatY 8s ease infinite" }} />
@@ -812,15 +1115,15 @@ export default function App() {
       {/* HERO */}
       <SectionReveal><section id="about" className="hero-section" style={{ minHeight: "95vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "5rem 4rem 3rem", position: "relative", overflow: "hidden" }}>
         <ThreeHero />
-        <Parallax speed={0.05} style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }}>
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }}>
           <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(110,231,247,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(110,231,247,0.025) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
-        </Parallax>
+        </div>
 
         <div style={{ position: "relative", zIndex: 2 }}>
           <div className="hero-inner" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "4rem" }}>
             {/* Text side */}
             <div style={{ flex: 1 }}>
-              <Parallax speed={-0.07}>
+              <div>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: "2.5rem" }}>
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 8, border: "1px solid rgba(74,222,128,0.3)", borderRadius: 3, padding: "6px 14px", fontSize: 10, color: "#4ade80", letterSpacing: "0.1em", fontFamily: "monospace", textTransform: "uppercase", background: "rgba(74,222,128,0.04)" }}>
                     <div style={{ width: 6, height: 6, background: "#4ade80", borderRadius: "50%", animation: "pulseGreen 2s infinite" }} />
@@ -845,12 +1148,12 @@ export default function App() {
                   <a href="https://drive.google.com/file/d/1PEuAK9LEg8flKRgUPYbi0wOdSpA7Qx7U/view" target="_blank" rel="noreferrer" className="btn-green">Resume</a>
                   <button className="btn-ghost" onClick={() => scrollTo("contact")}>Say Hello</button>
                 </div>
-              </Parallax>
+              </div>
             </div>
             {/* Avatar side */}
-            <Parallax speed={0.04} style={{ flexShrink: 0, animation: "avatarFloat 5s ease infinite" }} className="avatar-wrap">
+            <div style={{ flexShrink: 0, animation: "avatarFloat 5s ease infinite" }} className="avatar-wrap">
               <Avatar />
-            </Parallax>
+            </div>
           </div>
         </div>
 
@@ -871,6 +1174,8 @@ export default function App() {
           ))}
         </div>
       </div>
+
+      <BuildingTicker />
 
       {/* ABOUT */}
       <section style={{ padding: "7rem 4rem", position: "relative", zIndex: 2 }}>
@@ -916,6 +1221,9 @@ export default function App() {
         </div>
       </section>
 
+      <AchievementsStrip />
+      <QuoteBlock />
+
       {/* SKILLS */}
       <SectionReveal><section id="skills" style={{ padding: "7rem 4rem", background: "rgba(255,255,255,0.012)", borderTop: "1px solid rgba(110,231,247,0.06)", borderBottom: "1px solid rgba(110,231,247,0.06)", position: "relative", zIndex: 2 }}>
         <div className="section-label">Skills</div>
@@ -930,7 +1238,7 @@ export default function App() {
                 <div style={{ fontSize: "1.4rem", marginBottom: "0.9rem", color: "#6ee7f7", filter: "drop-shadow(0 0 8px rgba(110,231,247,0.6))" }}>{s.icon}</div>
                 <div className="syne" style={{ fontWeight: 700, fontSize: "0.93rem", marginBottom: "0.9rem", color: "#f0f0f8" }}>{s.name}</div>
                 <div style={{ marginBottom: "0.8rem" }}>{s.tags.map(t => <span key={t} className="skill-pill">{t}</span>)}</div>
-                <div>{s.bars.map((b,bi) => <SkillBar key={b.name} name={b.name} pct={b.pct} delay={bi*0.12} />)}</div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>{s.bars.map((b,bi) => <SkillRing key={b.name} name={b.name} pct={b.pct} delay={bi*0.1} color={["#6ee7f7","#a5f3c0","#f0abfc","#fde68a","#fca5a5","#93c5fd"][bi % 6]} />)}</div>
               </div>
             </Reveal>
           ))}
@@ -943,10 +1251,13 @@ export default function App() {
         <div className="section-label">My Work</div>
         <Reveal>
           <h2 className="syne" style={{ fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: "0.7rem", color: "#f0f0f8" }}>Featured Projects</h2>
-          <p style={{ color: "rgba(232,232,240,0.38)", fontSize: "0.92rem", marginBottom: "2.5rem" }}>Real code I have written and shipped.</p>
+          <p style={{ color: "rgba(232,232,240,0.38)", fontSize: "0.92rem", marginBottom: "2rem" }}>Real code I have written and shipped.</p>
         </Reveal>
+        <ProjectFilter active={projectFilter} onChange={setProjectFilter} />
         <div style={{ display: "flex", flexDirection: "column", gap: "1px", background: "rgba(110,231,247,0.06)", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(110,231,247,0.1)", backdropFilter: "blur(20px)" }}>
-          {projects.map((p, i) => (<Reveal key={p.name} delay={i * 0.07}><ProjectRow p={p} /></Reveal>))}
+          {filteredProjects.length === 0
+            ? <div style={{ padding: "3rem", textAlign: "center", color: "rgba(232,232,240,0.3)", fontFamily: "monospace", fontSize: 13 }}>No projects match this filter.</div>
+            : filteredProjects.map((p, i) => (<Reveal key={p.name} delay={i * 0.07}><ProjectRow p={p} /></Reveal>))}
         </div>
       </section>
         </SectionReveal>
@@ -1008,6 +1319,7 @@ export default function App() {
               <a href="mailto:anandsarmak@gmail.com" className="btn-cyan">Send Email</a>
               <a href="https://www.linkedin.com/in/anand-venkata-raghava-sai-kundurthi-75914a358/" target="_blank" rel="noreferrer" className="btn-ghost">LinkedIn</a>
               <a href="https://github.com/anandkundurthi" target="_blank" rel="noreferrer" className="btn-ghost">GitHub</a>
+              <CopyContactBtn />
             </div>
             {/* Contact Form */}
             <div style={{ marginBottom: "1.5rem" }}>
@@ -1032,5 +1344,6 @@ export default function App() {
         </span>
       </footer>
     </div>
+    </ToastProvider>
   );
 }
