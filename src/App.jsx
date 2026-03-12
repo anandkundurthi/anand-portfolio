@@ -1289,7 +1289,7 @@ function TechStack() {
 function LookingFor() {
   const prefs = [
     { icon: "💼", label: "Role", value: "Full-Stack / Backend Developer" },
-    { icon: "🌍", label: "Location", value: "Remote · Hybrid · Andhra Pradesh" },
+    { icon: "🌍", label: "Location", value: "Remote · Hybrid · Anywhere in India" },
     { icon: "🕐", label: "Type", value: "Full-Time · Internship · Contract" },
     { icon: "🚀", label: "Stack", value: "Python · React · Node.js · FastAPI" },
     { icon: "🤝", label: "Style", value: "Collaborative · Agile · Fast-learner" },
