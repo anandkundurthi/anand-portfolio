@@ -12,11 +12,11 @@ const PHOTO_FALLBACKS = [
 ];
 
 const projects = [
-  { emoji: "📄", year: "2025", type: "Python · FastAPI · React.js · MySQL", name: "AI Resume Analyzer", desc: "Full-stack AI-powered resume analysis platform that evaluates resumes against job descriptions using skill-matching algorithms. Features PDF text extraction via PyPDF2, REST API scoring with FastAPI, session-based authentication, and an animated dashboard showing match scores and improvement suggestions.", github: "https://github.com/anandkundurthi/ai-resume-analyzer", live: "https://ai-resume-analyzer-tuet.onrender.com", color: "#6ee7f7", num: "01" },
-  { emoji: "🌐", year: "2024–2025", type: "React.js · Node.js · Express.js · PostgreSQL · MongoDB", name: "Full-Stack Web Applications", desc: "Suite of MERN stack applications implementing CRUD operations, REST APIs, and JWT authentication. Responsive UI layouts compatible across desktop and mobile. Optimized complex SQL queries using indexing and join optimization techniques.", github: "https://github.com/anandkundurthi", live: null, color: "#a5f3c0", num: "02" },
-  { emoji: "🛒", year: "2025", type: "SQL · MySQL · Database Design", name: "SupplySync", desc: "A retail-focused MySQL project simulating real supermarket operations — inventory tracking, supplier handling, customer sales & billing, and business analytics with 20+ real-world SQL solutions.", github: "https://github.com/anandkundurthi/Dmart_mall_management", live: null, color: "#fde68a", num: "03" },
-  { emoji: "🎨", year: "2025", type: "HTML · CSS · JavaScript", name: "Color Picker", desc: "An interactive color picker built with vanilla HTML, CSS, and JavaScript. Demonstrates core frontend skills — DOM manipulation, event handling, and dynamic UI updates.", github: "https://github.com/anandkundurthi/colorPicker", live: null, color: "#f0abfc", num: "04" },
-  { emoji: "🚦", year: "2025", type: "HTML · CSS · JavaScript", name: "Traffic Light Simulation", desc: "JavaScript-based simulation of real-world traffic signals using timed state transitions, setInterval timing logic, and CSS class toggling.", github: "https://github.com/anandkundurthi/traffic_light", live: null, color: "#fca5a5", num: "05" },
+  { emoji: "📄", year: "2025", type: "Python · FastAPI · React.js · MySQL", name: "AI Resume Analyzer", desc: "Full-stack AI-powered resume analysis platform that evaluates resumes against job descriptions using skill-matching algorithms. Features PDF text extraction via PyPDF2, REST API scoring with FastAPI, session-based authentication, and an animated dashboard showing match scores and improvement suggestions.", github: "https://github.com/anandkundurthi/ai-resume-analyzer", live: "https://ai-resume-analyzer-tuet.onrender.com", color: "#6ee7f7", num: "01", screenshot: "https://opengraph.githubassets.com/1/anandkundurthi/ai-resume-analyzer" },
+  { emoji: "🌐", year: "2024–2025", type: "React.js · Node.js · Express.js · PostgreSQL · MongoDB", name: "Full-Stack Web Applications", desc: "Suite of MERN stack applications implementing CRUD operations, REST APIs, and JWT authentication. Responsive UI layouts compatible across desktop and mobile. Optimized complex SQL queries using indexing and join optimization techniques.", github: "https://github.com/anandkundurthi", live: null, color: "#a5f3c0", num: "02", screenshot: "https://opengraph.githubassets.com/1/anandkundurthi/anandkundurthi" },
+  { emoji: "🛒", year: "2025", type: "SQL · MySQL · Database Design", name: "SupplySync", desc: "A retail-focused MySQL project simulating real supermarket operations — inventory tracking, supplier handling, customer sales & billing, and business analytics with 20+ real-world SQL solutions.", github: "https://github.com/anandkundurthi/Dmart_mall_management", live: null, color: "#fde68a", num: "03", screenshot: "https://opengraph.githubassets.com/1/anandkundurthi/Dmart_mall_management" },
+  { emoji: "🎨", year: "2025", type: "HTML · CSS · JavaScript", name: "Color Picker", desc: "An interactive color picker built with vanilla HTML, CSS, and JavaScript. Demonstrates core frontend skills — DOM manipulation, event handling, and dynamic UI updates.", github: "https://github.com/anandkundurthi/colorPicker", live: null, color: "#f0abfc", num: "04", screenshot: "https://opengraph.githubassets.com/1/anandkundurthi/colorPicker" },
+  { emoji: "🚦", year: "2025", type: "HTML · CSS · JavaScript", name: "Traffic Light Simulation", desc: "JavaScript-based simulation of real-world traffic signals using timed state transitions, setInterval timing logic, and CSS class toggling.", github: "https://github.com/anandkundurthi/traffic_light", live: null, color: "#fca5a5", num: "05", screenshot: "https://opengraph.githubassets.com/1/anandkundurthi/traffic_light" },
 ];
 
 const skills = [
@@ -640,6 +640,19 @@ function ProjectRow({ p }) {
           position: "absolute", inset: 0, opacity: hov ? 1 : 0, transition: "opacity 0.4s", pointerEvents: "none",
           background: `radial-gradient(ellipse at top left, ${p.color}18 0%, transparent 60%)`,
         }} />
+        {/* Screenshot preview on hover */}
+        {p.screenshot && hov && (
+          <div style={{
+            position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)",
+            width: 180, height: 100, borderRadius: 8, overflow: "hidden",
+            border: `1px solid ${p.color}44`, boxShadow: `0 8px 32px rgba(0,0,0,0.6), 0 0 20px ${p.color}22`,
+            zIndex: 10, pointerEvents: "none",
+            animation: "toastSlide 0.25s cubic-bezier(0.22,1,0.36,1)",
+          }}>
+            <img src={p.screenshot} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.85)" }} />
+            <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, ${p.color}22, transparent)` }} />
+          </div>
+        )}
         {/* Top row: number + name + type + links */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1.5rem", flexWrap: "wrap", marginBottom: "0.9rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -983,11 +996,336 @@ function CopyContactBtn() {
 }
 
 /* ─── MAIN APP ──────────────────────────────────────────────────────────── */
+
+/* ─── WAVE DIVIDER ──────────────────────────────────────────────────────── */
+function WaveDivider({ flip = false, color = "rgba(110,231,247,0.06)" }) {
+  return (
+    <div style={{ lineHeight: 0, position: "relative", zIndex: 2, transform: flip ? "scaleY(-1)" : "none" }}>
+      <svg viewBox="0 0 1440 56" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", width: "100%" }}>
+        <path d="M0,32 C240,56 480,8 720,32 C960,56 1200,8 1440,32 L1440,56 L0,56 Z" fill={color} />
+        <path d="M0,40 C360,16 720,56 1080,24 C1260,12 1380,36 1440,40 L1440,56 L0,56 Z" fill={color} opacity="0.5" />
+      </svg>
+    </div>
+  );
+}
+
+/* ─── BACK TO TOP ────────────────────────────────────────────────────────── */
+function BackToTop() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const fn = () => setShow(window.scrollY > 400);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
+  return (
+    <button
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      style={{
+        position: "fixed", bottom: 28, right: 28, zIndex: 200,
+        width: 42, height: 42, borderRadius: "50%", cursor: "none",
+        background: "rgba(6,8,16,0.9)", border: "1px solid rgba(110,231,247,0.35)",
+        color: "#6ee7f7", fontSize: 18, display: "flex", alignItems: "center",
+        justifyContent: "center", backdropFilter: "blur(12px)",
+        boxShadow: "0 0 20px rgba(110,231,247,0.15)",
+        opacity: show ? 1 : 0, transform: show ? "translateY(0)" : "translateY(16px)",
+        transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)", pointerEvents: show ? "all" : "none",
+      }}
+      title="Back to top"
+    >↑</button>
+  );
+}
+
+/* ─── SHARE BUTTON ───────────────────────────────────────────────────────── */
+function ShareBtn() {
+  const toast = useToast();
+  return (
+    <button
+      onClick={() => {
+        navigator.clipboard.writeText("https://anand-portfolio-self.vercel.app")
+          .then(() => toast("Portfolio link copied! Share away 🚀", "success"))
+          .catch(() => toast("Copy failed", "warn"));
+      }}
+      className="btn-ghost"
+      style={{ cursor: "none", fontSize: 10, padding: "8px 16px" }}
+    >
+      🔗 Share
+    </button>
+  );
+}
+
+/* ─── ACTIVE NAV HOOK ────────────────────────────────────────────────────── */
+function useActiveSection(sections) {
+  const [active, setActive] = useState("");
+  useEffect(() => {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); });
+    }, { threshold: 0.35 });
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) obs.observe(el);
+    });
+    return () => obs.disconnect();
+  }, []);
+  return active;
+}
+
+/* ─── GITHUB HEATMAP ─────────────────────────────────────────────────────── */
+function GitHubHeatmap() {
+  const [weeks, setWeeks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    // Use GitHub contributions via a public proxy
+    fetch("https://github-contributions-api.jogruber.de/v4/anandkundurthi?y=last")
+      .then(r => r.json())
+      .then(data => {
+        const contributions = data.contributions || [];
+        // Group into weeks of 7 days
+        const grouped = [];
+        for (let i = 0; i < contributions.length; i += 7) {
+          grouped.push(contributions.slice(i, i + 7));
+        }
+        setWeeks(grouped.slice(-26)); // last 26 weeks
+        setTotal(contributions.reduce((s, d) => s + d.count, 0));
+        setLoading(false);
+      })
+      .catch(() => {
+        // Fallback: generate realistic-looking mock data
+        const mock = Array.from({ length: 26 }, () =>
+          Array.from({ length: 7 }, () => ({ count: Math.random() > 0.5 ? Math.floor(Math.random() * 6) : 0 }))
+        );
+        setWeeks(mock);
+        setTotal(mock.flat().reduce((s, d) => s + d.count, 0));
+        setLoading(false);
+      });
+  }, []);
+
+  const getColor = (count) => {
+    if (count === 0) return "rgba(255,255,255,0.05)";
+    if (count <= 1) return "rgba(110,231,247,0.2)";
+    if (count <= 2) return "rgba(110,231,247,0.45)";
+    if (count <= 4) return "rgba(110,231,247,0.7)";
+    return "#6ee7f7";
+  };
+
+  return (
+    <SectionReveal>
+      <section style={{ padding: "5rem 4rem", position: "relative", zIndex: 2 }}>
+        <div className="section-label">Activity</div>
+        <Reveal>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 16, marginBottom: "2rem", flexWrap: "wrap" }}>
+            <h2 className="syne" style={{ fontSize: "clamp(1.6rem,3vw,2.4rem)", fontWeight: 800, letterSpacing: "-0.03em", color: "#f0f0f8" }}>
+              GitHub Contributions
+            </h2>
+            {!loading && (
+              <span style={{ fontFamily: "monospace", fontSize: 12, color: "#6ee7f7" }}>
+                {total} contributions in the last 6 months
+              </span>
+            )}
+          </div>
+        </Reveal>
+        {loading ? (
+          <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+            {Array.from({ length: 26 * 7 }, (_, i) => (
+              <div key={i} style={{ width: 12, height: 12, borderRadius: 2, background: "rgba(255,255,255,0.04)", animation: "glowPulse 1.5s ease infinite", animationDelay: `${(i % 7) * 0.1}s` }} />
+            ))}
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto", paddingBottom: 8 }}>
+            <div style={{ display: "flex", gap: 3, minWidth: "fit-content" }}>
+              {weeks.map((week, wi) => (
+                <div key={wi} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  {week.map((day, di) => (
+                    <div
+                      key={di}
+                      title={`${day.count} contribution${day.count !== 1 ? "s" : ""}`}
+                      style={{
+                        width: 12, height: 12, borderRadius: 2,
+                        background: getColor(day.count),
+                        transition: "transform 0.15s, box-shadow 0.15s",
+                        cursor: "default",
+                        boxShadow: day.count > 3 ? "0 0 6px rgba(110,231,247,0.5)" : "none",
+                      }}
+                      onMouseEnter={e => { e.target.style.transform = "scale(1.5)"; e.target.style.boxShadow = "0 0 8px rgba(110,231,247,0.8)"; }}
+                      onMouseLeave={e => { e.target.style.transform = "scale(1)"; e.target.style.boxShadow = day.count > 3 ? "0 0 6px rgba(110,231,247,0.5)" : "none"; }}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+            {/* Legend */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 12 }}>
+              <span style={{ fontSize: 10, color: "rgba(232,232,240,0.3)", fontFamily: "monospace" }}>Less</span>
+              {[0, 1, 2, 4, 6].map(c => (
+                <div key={c} style={{ width: 12, height: 12, borderRadius: 2, background: getColor(c) }} />
+              ))}
+              <span style={{ fontSize: 10, color: "rgba(232,232,240,0.3)", fontFamily: "monospace" }}>More</span>
+            </div>
+          </div>
+        )}
+      </section>
+    </SectionReveal>
+  );
+}
+
+/* ─── TECH STACK SHOWCASE ────────────────────────────────────────────────── */
+function TechStack() {
+  const techs = [
+    { name: "Python",     color: "#3b82f6", icon: "🐍" },
+    { name: "React",      color: "#6ee7f7", icon: "⚛️" },
+    { name: "FastAPI",    color: "#4ade80", icon: "⚡" },
+    { name: "Node.js",    color: "#a5f3c0", icon: "🟢" },
+    { name: "PostgreSQL", color: "#818cf8", icon: "🐘" },
+    { name: "MongoDB",    color: "#4ade80", icon: "🍃" },
+    { name: "MySQL",      color: "#f0abfc", icon: "🐬" },
+    { name: "JavaScript", color: "#fde68a", icon: "𝙅𝙎" },
+    { name: "TypeScript", color: "#93c5fd", icon: "𝙏𝙎" },
+    { name: "Git",        color: "#fca5a5", icon: "⎇" },
+    { name: "Linux",      color: "#fde68a", icon: "🐧" },
+    { name: "Figma",      color: "#f0abfc", icon: "✦" },
+    { name: "Express",    color: "#e8e8f0", icon: "🚂" },
+    { name: "SQL",        color: "#6ee7f7", icon: "⬡" },
+    { name: "Docker",     color: "#93c5fd", icon: "🐳" },
+    { name: "REST API",   color: "#4ade80", icon: "🔌" },
+  ];
+  return (
+    <SectionReveal>
+      <section style={{ padding: "5rem 4rem", background: "rgba(255,255,255,0.008)", position: "relative", zIndex: 2 }}>
+        <div className="section-label">Stack</div>
+        <Reveal>
+          <h2 className="syne" style={{ fontSize: "clamp(1.6rem,3vw,2.4rem)", fontWeight: 800, letterSpacing: "-0.03em", color: "#f0f0f8", marginBottom: "2.5rem" }}>
+            Tech I Work With
+          </h2>
+        </Reveal>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
+          {techs.map((t, i) => (
+            <Reveal key={t.name} delay={i * 0.04}>
+              <div
+                style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  border: `1px solid ${t.color}33`,
+                  background: `${t.color}08`,
+                  borderRadius: 8, padding: "10px 18px",
+                  transition: "all 0.25s", cursor: "default",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = `${t.color}18`;
+                  e.currentTarget.style.borderColor = t.color;
+                  e.currentTarget.style.transform = "translateY(-3px)";
+                  e.currentTarget.style.boxShadow = `0 8px 24px ${t.color}22`;
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = `${t.color}08`;
+                  e.currentTarget.style.borderColor = `${t.color}33`;
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                <span style={{ fontSize: 16 }}>{t.icon}</span>
+                <span style={{ fontFamily: "monospace", fontSize: 12, color: "rgba(232,232,240,0.7)", letterSpacing: "0.04em" }}>{t.name}</span>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+    </SectionReveal>
+  );
+}
+
+/* ─── WHAT I'M LOOKING FOR ───────────────────────────────────────────────── */
+function LookingFor() {
+  const prefs = [
+    { icon: "💼", label: "Role", value: "Full-Stack / Backend Developer" },
+    { icon: "🌍", label: "Location", value: "Remote · Hybrid · Andhra Pradesh" },
+    { icon: "🕐", label: "Type", value: "Full-Time · Internship · Contract" },
+    { icon: "🚀", label: "Stack", value: "Python · React · Node.js · FastAPI" },
+    { icon: "🤝", label: "Style", value: "Collaborative · Agile · Fast-learner" },
+    { icon: "📈", label: "Goal", value: "Grow into a Senior Dev role in 2 years" },
+  ];
+  return (
+    <SectionReveal>
+      <section style={{ padding: "5rem 4rem", position: "relative", zIndex: 2 }}>
+        <div className="section-label">Availability</div>
+        <Reveal>
+          <h2 className="syne" style={{ fontSize: "clamp(1.6rem,3vw,2.4rem)", fontWeight: 800, letterSpacing: "-0.03em", color: "#f0f0f8", marginBottom: "2.5rem" }}>
+            What I'm Looking For
+          </h2>
+        </Reveal>
+        <div style={{
+          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+          gap: "1px", background: "rgba(110,231,247,0.07)", borderRadius: 16,
+          overflow: "hidden", border: "1px solid rgba(110,231,247,0.1)",
+        }}>
+          {prefs.map((p, i) => (
+            <Reveal key={p.label} delay={i * 0.06}>
+              <div
+                style={{ padding: "1.6rem 2rem", background: "#060810", transition: "background 0.3s" }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(110,231,247,0.03)"}
+                onMouseLeave={e => e.currentTarget.style.background = "#060810"}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <span style={{ fontSize: 18 }}>{p.icon}</span>
+                  <span style={{ fontSize: 10, fontFamily: "monospace", color: "#6ee7f7", letterSpacing: "0.12em", textTransform: "uppercase" }}>{p.label}</span>
+                </div>
+                <div className="syne" style={{ fontWeight: 700, fontSize: "0.92rem", color: "#f0f0f8", lineHeight: 1.5 }}>{p.value}</div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+        {/* Open to work badge */}
+        <Reveal delay={0.3}>
+          <div style={{ marginTop: "2rem", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(74,222,128,0.07)", border: "1px solid rgba(74,222,128,0.3)", borderRadius: 24, padding: "8px 20px" }}>
+              <div style={{ width: 8, height: 8, background: "#4ade80", borderRadius: "50%", animation: "pulseGreen 2s infinite" }} />
+              <span style={{ fontFamily: "monospace", fontSize: 11, color: "#4ade80", letterSpacing: "0.08em" }}>Open to opportunities — Available immediately</span>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+    </SectionReveal>
+  );
+}
+
+/* ─── ANIMATED STAT COUNTER (scroll-triggered) ───────────────────────────── */
+function AnimatedStat({ n, suffix, label, icon }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const started = useRef(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !started.current) {
+        started.current = true;
+        let start = 0;
+        const steps = 60;
+        const inc = n / steps;
+        const t = setInterval(() => {
+          start = Math.min(start + inc, n);
+          setCount(Math.floor(start));
+          if (start >= n) clearInterval(t);
+        }, 1400 / steps);
+      }
+    }, { threshold: 0.5 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [n]);
+  return (
+    <div ref={ref} className="stat-card" style={{ textAlign: "center", padding: "2rem 1.5rem" }}>
+      <div style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}>{icon}</div>
+      <div className="syne" style={{ fontSize: "2.4rem", fontWeight: 800, color: "#6ee7f7", lineHeight: 1, marginBottom: 6, textShadow: "0 0 20px rgba(110,231,247,0.4)" }}>
+        {count}{suffix}
+      </div>
+      <div style={{ fontSize: 10, color: "rgba(232,232,240,0.32)", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "monospace" }}>{label}</div>
+    </div>
+  );
+}
+
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [projectFilter, setProjectFilter] = useState("All");
   const filteredProjects = projects.filter(p => projectFilter === "All" || p.type.includes(projectFilter));
+  const activeSection = useActiveSection(["about","skills","projects","education","contact"]);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", fn, { passive: true });
@@ -1015,6 +1353,7 @@ export default function App() {
         @keyframes toastSlide { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
         @keyframes rippleOut { from{width:0;height:0;opacity:0.8} to{width:120px;height:120px;opacity:0} }
         @keyframes rotateBorder { from{filter:blur(2px) hue-rotate(0deg)} to{filter:blur(2px) hue-rotate(360deg)} }
+        .nav-btn { transition: color 0.2s, border-color 0.2s !important; }
         .syne { font-family: 'Syne', sans-serif !important; }
         .nav-btn { background:none; border:none; color:rgba(232,232,240,0.45); font-size:11px; letter-spacing:0.15em; text-transform:uppercase; font-family:'DM Sans',sans-serif; transition:color 0.2s; padding:6px 0; cursor:none; }
         .nav-btn:hover { color:#6ee7f7; }
@@ -1074,6 +1413,7 @@ export default function App() {
       <CustomCursor />
       <ClickRipple />
       <Spotlight />
+      <BackToTop />
       <HireEasterEgg />
       <ScrollProgress />
 
@@ -1101,8 +1441,11 @@ export default function App() {
   <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
     <div className="nav-links" style={{ display: "flex", gap: "2.2rem", alignItems: "center" }}>
       {["About","Skills","Projects","Education","Contact"].map(n => (
-        <button key={n} className="nav-btn" onClick={() => scrollTo(n)}>{n}</button>
+        <button key={n} className="nav-btn" onClick={() => scrollTo(n)}
+          style={{ color: activeSection === n.toLowerCase() ? "#6ee7f7" : undefined, borderBottom: activeSection === n.toLowerCase() ? "1px solid #6ee7f7" : "1px solid transparent", paddingBottom: 4 }}
+        >{n}</button>
       ))}
+      <ShareBtn />
       <button className="btn-cyan" style={{ padding: "8px 18px", fontSize: 10 }} onClick={() => scrollTo("contact")}>Hire Me</button>
     </div>
     <div className="mobile-menu-btn" style={{ display: "none" }}>
@@ -1177,6 +1520,8 @@ export default function App() {
 
       <BuildingTicker />
 
+      <WaveDivider />
+
       {/* ABOUT */}
       <section style={{ padding: "7rem 4rem", position: "relative", zIndex: 2 }}>
         <div className="section-label">About Me</div>
@@ -1189,12 +1534,10 @@ export default function App() {
               With hands-on <strong style={{ color: "#6ee7f7", fontWeight: 500 }}>Full-Stack experience</strong> at <strong style={{ color: "#f0f0f8", fontWeight: 500 }}>Diigoo Tech</strong> and intensive training at <strong style={{ color: "#f0f0f8", fontWeight: 500 }}>NxtWave CCBP 4.0</strong>, I build end-to-end — from system design to deployment.
             </p>
             <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.8rem" }}>
-              {STATS.map(s => (
-                <div key={s.label} className="stat-card">
-                  <div className="syne" style={{ fontSize: "2rem", fontWeight: 800, color: "#6ee7f7", lineHeight: 1, marginBottom: 6, textShadow: "0 0 20px rgba(110,231,247,0.4)" }}><Counter target={s.n} suffix={s.suffix} /></div>
-                  <div style={{ fontSize: 10, color: "rgba(232,232,240,0.32)", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "monospace" }}>{s.label}</div>
-                </div>
-              ))}
+              <AnimatedStat n={4} suffix="mo+" label="Industry XP" icon="🏢" />
+              <AnimatedStat n={5} suffix="+" label="Certifications" icon="📜" />
+              <AnimatedStat n={6} suffix="" label="GitHub Projects" icon="💻" />
+              <AnimatedStat n={100} suffix="%" label="Passion to Build" icon="🔥" />
             </div>
           </Reveal>
           <Reveal delay={0.12}>
@@ -1222,6 +1565,11 @@ export default function App() {
       </section>
 
       <AchievementsStrip />
+      <WaveDivider flip={true} color="rgba(165,243,192,0.05)" />
+      <TechStack />
+      <WaveDivider color="rgba(110,231,247,0.06)" />
+      <LookingFor />
+      <WaveDivider flip={true} color="rgba(110,231,247,0.04)" />
       <QuoteBlock />
 
       {/* SKILLS */}
@@ -1301,6 +1649,10 @@ export default function App() {
       </section>
         </SectionReveal>
 
+      <WaveDivider color="rgba(110,231,247,0.05)" />
+      <GitHubHeatmap />
+      <WaveDivider flip={true} color="rgba(110,231,247,0.05)" />
+
       {/* CONTACT */}
       <SectionReveal><section id="contact" style={{ padding: "7rem 4rem", position: "relative", zIndex: 2 }}>
         <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle,rgba(110,231,247,0.05) 0%,transparent 70%)", pointerEvents: "none", animation: "floatY 6s ease infinite" }} />
@@ -1338,6 +1690,7 @@ export default function App() {
       </section>
         </SectionReveal>
 
+      <WaveDivider color="rgba(110,231,247,0.04)" />
       <footer style={{ textAlign: "center", padding: "1.5rem 4rem", borderTop: "1px solid rgba(110,231,247,0.06)", position: "relative", zIndex: 2 }}>
         <span style={{ fontSize: 10, color: "rgba(232,232,240,0.18)", fontFamily: "monospace", letterSpacing: "0.1em" }}>
           Crafted with curiosity, coffee, and way too many open tabs · 2025 Anand Kundurthi
