@@ -47,7 +47,6 @@ The message is delivered directly to my inbox.
 
 ##  Project Structure
 
-```text
 anand-portfolio
 │
 ├── public
@@ -115,4 +114,7 @@ GitHub
 https://github.com/anandkundurthi
 
 LinkedIn
-(Add your LinkedIn profile link)
+https://www.linkedin.com/in/anand-venkata-raghava-sai-kundurthi-75914a358/
+
+Email
+anandsarmak@gmail.com
