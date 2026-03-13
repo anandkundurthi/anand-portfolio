@@ -613,7 +613,7 @@ function ContactForm() {
         });
         window.emailjs.init("Mffsv4BJ2iFYVa-xe");
       }
-      await window.emailjs.send("service_fgf1mpm", "template_gp18zim", {
+      await window.emailjs.send("service_fgf1mpm", "template_iaq92rz", {
         from_name: form.name,
         from_email: form.email,
         message: form.message,
