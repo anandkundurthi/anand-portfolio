@@ -611,9 +611,9 @@ function ContactForm() {
           s.onload = res; s.onerror = rej;
           document.head.appendChild(s);
         });
-        window.emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // ← Replace with your EmailJS public key
+        window.emailjs.init("Mffsv4BJ2iFYVa-xe");
       }
-      await window.emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", { // ← Replace with your EmailJS service & template IDs
+      await window.emailjs.send("service_fgf1mpm", "gp18zim", {
         from_name: form.name,
         from_email: form.email,
         message: form.message,
