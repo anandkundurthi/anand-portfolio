@@ -1,83 +1,118 @@
-#  Hi, I'm Anand Kundurthi
+# Anand Kundurthi – Developer Portfolio
 
-Welcome to my personal portfolio repository!  
-I’m a Full Stack Developer skilled in React.js, JavaScript, Python, SQL, and FastAPI.  
-This repository contains the source code for my portfolio website.
+This is my personal developer portfolio website showcasing my projects, skills, and contact information. The website is built to present my work and allow recruiters or collaborators to easily reach out to me.
 
 ---
 
-##  Live Portfolio
+##  Live Website
 
- https://anand-portfolio-self.vercel.app/
-
-Explore my projects, skills, and professional journey.
+🔗 https://anand-portfolio-self.vercel.app
 
 ---
 
-##  About Me
+##  Features
 
-I specialize in building responsive web applications and scalable backend systems with optimized database design.
-
-Core strengths:
-
-- Frontend Development using **React.js, HTML5, CSS3, JavaScript**
-- Backend Development using **Python & FastAPI**
-- Database Design & Query Optimization using **SQL, MySQL**
-- REST API Development
-- Strong foundation in **Data Structures, OOP, and DBMS**
-- UI/UX Design with Figma
+- Modern responsive UI
+- Project showcase section
+- Contact form with email integration
+- Social links (LinkedIn, GitHub)
+- Smooth animations and interactive design
 
 ---
 
-##  Tech Stack
+## ️ Tech Stack
 
-**Frontend:**  
-React.js · JavaScript · HTML5 · CSS3 · Responsive Design  
-
-**Backend:**  
-Python · FastAPI · Node.js · REST APIs  
-
-**Database:**  
-SQL · MySQL · MongoDB · Database Normalization  
-
-**Tools & Concepts:**  
-Git · GitHub · OOP · Data Structures · DBMS  
+- React.js
+- JavaScript
+- HTML5
+- CSS3
+- EmailJS
+- Vercel (Deployment)
 
 ---
 
-##  Featured Projects
+##  Contact Form
 
-###  SupplySync – Product & Stock Management Database  
-Retail database system built with MySQL, implementing normalized schema design and solving real-world business queries.
+The contact form is integrated using EmailJS which allows messages to be sent directly from the website to my email without a backend server.
 
-###  BiblioBase – Library Management System  
-Relational database system managing books, members, and transactions with optimized SQL queries.
+Users can send:
 
-###  Color Picker  
-Interactive frontend application demonstrating DOM manipulation and event handling.
+- Name  
+- Email  
+- Message  
 
-###  Traffic Light Simulation  
-JavaScript-based simulation of real-world traffic signals using timed state transitions.
+The message is delivered directly to my inbox.
 
 ---
 
-##  Let’s Connect
+##  Project Structure
 
-I’m actively seeking opportunities as:
+```text
+anand-portfolio
+│
+├── public
+│   └── index.html
+│
+├── src
+│   ├── assets
+│   ├── components
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── styles.css
+│
+├── package.json
+├── package-lock.json
+├── vite.config.js
+└── README.md
 
-- Frontend Developer  
-- Python Developer  
-- SQL / Database Developer  
-- Full Stack Developer  
+## ️ Setup Instructions
 
-📩 Open to entry-level roles, internships, and full-time positions.
+Clone the repository:
 
-LinkedIn:  
-https://www.linkedin.com/in/anand-venkata-raghava-sai-kundurthi-75914a358/
+git clone https://github.com/anandkundurthi/anand-portfolio.git
 
-GitHub:  
+Navigate into the project:
+
+cd anand-portfolio
+
+Install dependencies:
+
+npm install
+
+Run the development server:
+
+npm run dev
+
+##  Deployment
+
+This project is deployed using Vercel.
+
+Steps to deploy:
+
+Push the repository to GitHub
+
+Import the project into Vercel
+
+Deploy the project
+
+##  Future Improvements
+
+Add dark/light theme toggle
+
+Add blog section
+
+Improve animations
+
+Add project filtering
+
+Add downloadable resume
+
+##  Author
+
+Anand Kundurthi
+
+GitHub
 https://github.com/anandkundurthi
 
----
-
- If you like this project, consider giving it a star!
+LinkedIn
+(Add your LinkedIn profile link)
