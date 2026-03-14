@@ -204,73 +204,53 @@ function ScrollProgress() {
 /* ─── THREE.JS HERO ─────────────────────────────────────────────────────── */
 function ThreeHero() {
   const canvasRef = useRef(null);
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    let W, H, animId, nodes = [], edges = [], pulses = [];
-
-    // ── IntersectionObserver: fully stop when hero off screen ──
+    let W, H, animId, mouseX = 0.5, mouseY = 0.5;
     let isVisible = true;
-    const observer = new IntersectionObserver(
-      ([e]) => { isVisible = e.isIntersecting; },
-      { threshold: 0 }
-    );
+    const observer = new IntersectionObserver(([e]) => { isVisible = e.isIntersecting; }, { threshold: 0 });
     observer.observe(canvas);
-
-    const NODE_COUNT = 42;
-    const CONNECT_DIST = 160;
-    const LABELS = ["API","SQL","Git","AI","ML","DB","UI","UX","JS","TS",
-                    "CSS","DOM","JWT","ORM","CLI","SSH","CDN","DNS","CI","CD"];
-
-    const initNodes = () => {
-      nodes = Array.from({ length: NODE_COUNT }, (_, i) => ({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.28,
-        vy: (Math.random() - 0.5) * 0.28,
-        r: Math.random() > 0.82 ? 4.5 : 2.5,   // some bigger "hub" nodes
-        label: Math.random() > 0.55 ? LABELS[i % LABELS.length] : null,
-        pulse: 0,           // glow pulse phase
-        pulseSpeed: 0.02 + Math.random() * 0.02,
-        color: Math.random() > 0.5 ? "#6ee7f7" : "#a5f3c0",
-      }));
-      // Build static edge list — only pairs within CONNECT_DIST at init
-      edges = [];
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const dx = nodes[i].x - nodes[j].x;
-          const dy = nodes[i].y - nodes[j].y;
-          if (Math.sqrt(dx*dx + dy*dy) < CONNECT_DIST) {
-            edges.push([i, j]);
-          }
-        }
-      }
-      // Spawn initial signal pulses
-      pulses = [];
-      for (let k = 0; k < 8; k++) spawnPulse();
-    };
-
-    const spawnPulse = () => {
-      if (edges.length === 0) return;
-      const edge = edges[Math.floor(Math.random() * edges.length)];
-      pulses.push({ edge, t: 0, speed: 0.004 + Math.random() * 0.006 });
-    };
 
     const resize = () => {
       W = canvas.parentElement.clientWidth;
       H = canvas.parentElement.clientHeight;
-      canvas.width  = W;
-      canvas.height = H;
-      initNodes();
+      canvas.width = W; canvas.height = H;
     };
     resize();
     window.addEventListener("resize", resize, { passive: true });
+    canvas.parentElement.addEventListener("mousemove", (e) => {
+      const r = canvas.parentElement.getBoundingClientRect();
+      mouseX = (e.clientX - r.left) / r.width;
+      mouseY = (e.clientY - r.top) / r.height;
+    }, { passive: true });
 
-    // Throttle to 24fps — smooth enough, lightweight
+    // ── 3D Globe parameters ──
+    const RADIUS = Math.min(W, H) * 0.28;
+    const LATLINES = 12, LNGLINES = 16;
+    const DOTS = 180;
+
+    let rotX = 0.3, rotY = 0;
+
+    // Project 3D point to 2D with perspective
+    const project = (x, y, z, cx, cy) => {
+      // Apply rotation
+      const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+      const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+      // Rotate Y
+      const x1 = x * cosY - z * sinY;
+      const z1 = x * sinY + z * cosY;
+      // Rotate X
+      const y2 = y * cosX - z1 * sinX;
+      const z2 = y * sinX + z1 * cosX;
+      const fov = 900;
+      const scale = fov / (fov + z2 + 300);
+      return { sx: cx + x1 * scale, sy: cy + y2 * scale, scale, z: z2 };
+    };
+
     let lastFrame = 0;
-    const INTERVAL = 1000 / 24;
+    const INTERVAL = 1000 / 30;
 
     const draw = (now) => {
       animId = requestAnimationFrame(draw);
@@ -280,89 +260,145 @@ function ThreeHero() {
 
       ctx.clearRect(0, 0, W, H);
 
-      // ── Move nodes (drift) ──
-      nodes.forEach(n => {
-        n.x += n.vx; n.y += n.vy;
-        if (n.x < 0) { n.x = 0; n.vx *= -1; }
-        if (n.x > W) { n.x = W; n.vx *= -1; }
-        if (n.y < 0) { n.y = 0; n.vy *= -1; }
-        if (n.y > H) { n.y = H; n.vy *= -1; }
-        n.pulse = (n.pulse + n.pulseSpeed) % (Math.PI * 2);
-      });
+      const cx = W * 0.72, cy = H * 0.5;
+      const R = Math.min(W, H) * 0.26;
 
-      // ── Draw edges ──
-      edges.forEach(([i, j]) => {
-        const a = nodes[i], b = nodes[j];
-        const dx = a.x - b.x, dy = a.y - b.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist > CONNECT_DIST) return; // nodes drifted apart
-        const alpha = (1 - dist / CONNECT_DIST) * 0.18;
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.strokeStyle = `rgba(110,231,247,${alpha})`;
-        ctx.lineWidth = 0.6;
-        ctx.stroke();
-      });
+      // Auto-rotate + subtle mouse influence
+      rotY += 0.004;
+      rotX = 0.25 + (mouseY - 0.5) * 0.3;
 
-      // ── Draw signal pulses along edges ──
-      pulses.forEach((p, idx) => {
-        p.t += p.speed;
-        if (p.t >= 1) {
-          // respawn on a random edge
-          p.edge = edges[Math.floor(Math.random() * edges.length)];
-          p.t = 0;
-          p.speed = 0.004 + Math.random() * 0.006;
-          return;
+      // ── Draw latitude lines ──
+      for (let i = 0; i <= LATLINES; i++) {
+        const lat = (i / LATLINES) * Math.PI - Math.PI / 2;
+        const r = Math.cos(lat) * R;
+        const y = Math.sin(lat) * R;
+        const pts = [];
+        for (let j = 0; j <= 64; j++) {
+          const lng = (j / 64) * Math.PI * 2;
+          const x = Math.cos(lng) * r;
+          const z = Math.sin(lng) * r;
+          pts.push(project(x, y, z, cx, cy));
         }
-        const [i, j] = p.edge;
-        const a = nodes[i], b = nodes[j];
-        const x = a.x + (b.x - a.x) * p.t;
-        const y = a.y + (b.y - a.y) * p.t;
-        // pulse dot
         ctx.beginPath();
-        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(110,231,247,0.9)";
-        ctx.fill();
-        // fading trail
-        const tx = a.x + (b.x - a.x) * Math.max(0, p.t - 0.08);
-        const ty = a.y + (b.y - a.y) * Math.max(0, p.t - 0.08);
-        ctx.beginPath();
-        ctx.moveTo(tx, ty);
-        ctx.lineTo(x, y);
-        ctx.strokeStyle = "rgba(110,231,247,0.5)";
-        ctx.lineWidth = 1.5;
+        pts.forEach((p, idx) => {
+          const alpha = Math.max(0, (p.z + R) / (2 * R)) * 0.15 + 0.03;
+          if (idx === 0) ctx.moveTo(p.sx, p.sy);
+          else ctx.lineTo(p.sx, p.sy);
+        });
+        ctx.strokeStyle = "rgba(110,231,247,0.12)";
+        ctx.lineWidth = 0.5;
         ctx.stroke();
-      });
+      }
 
-      // Spawn new pulses occasionally
-      if (Math.random() < 0.04 && pulses.length < 14) spawnPulse();
-
-      // ── Draw nodes ──
-      nodes.forEach(n => {
-        const glow = 0.5 + 0.5 * Math.sin(n.pulse);
-        // outer glow ring for hub nodes
-        if (n.r > 3) {
-          ctx.beginPath();
-          ctx.arc(n.x, n.y, n.r + 4 + glow * 3, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(110,231,247,${0.04 + glow * 0.06})`;
-          ctx.fill();
+      // ── Draw longitude lines ──
+      for (let j = 0; j < LNGLINES; j++) {
+        const lng = (j / LNGLINES) * Math.PI * 2;
+        const pts = [];
+        for (let i = 0; i <= 48; i++) {
+          const lat = (i / 48) * Math.PI - Math.PI / 2;
+          const x = Math.cos(lat) * Math.cos(lng) * R;
+          const y = Math.sin(lat) * R;
+          const z = Math.cos(lat) * Math.sin(lng) * R;
+          pts.push(project(x, y, z, cx, cy));
         }
-        // node dot
         ctx.beginPath();
-        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-        ctx.fillStyle = n.color === "#6ee7f7"
-          ? `rgba(110,231,247,${0.55 + glow * 0.35})`
-          : `rgba(165,243,192,${0.45 + glow * 0.3})`;
+        pts.forEach((p, idx) => {
+          if (idx === 0) ctx.moveTo(p.sx, p.sy);
+          else ctx.lineTo(p.sx, p.sy);
+        });
+        ctx.strokeStyle = "rgba(110,231,247,0.08)";
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+
+      // ── Draw floating dots on globe surface ──
+      const LABELS = ["API","SQL","Git","React","Python","Node","AI","ML","DB","JWT","CSS","DOM"];
+      for (let i = 0; i < DOTS; i++) {
+        const lat = (i / DOTS) * Math.PI * 2;
+        const lng = ((i * 2.4) % (Math.PI * 2));
+        const x = Math.cos(lat) * Math.cos(lng) * R;
+        const y = Math.sin(lat) * R;
+        const z = Math.cos(lat) * Math.sin(lng) * R;
+        const p = project(x, y, z, cx, cy);
+        if (p.z < -R * 0.1) continue; // cull back face
+        const brightness = (p.z + R) / (2 * R);
+        const size = p.scale * (brightness > 0.7 ? 2.5 : 1.5);
+        const alpha = brightness * 0.8 + 0.1;
+        const isHub = i % 14 === 0;
+        ctx.beginPath();
+        ctx.arc(p.sx, p.sy, isHub ? size * 2 : size, 0, Math.PI * 2);
+        ctx.fillStyle = i % 3 === 0
+          ? `rgba(110,231,247,${alpha})`
+          : `rgba(165,243,192,${alpha * 0.7})`;
         ctx.fill();
-        // label on hub nodes
-        if (n.label && n.r > 3) {
-          ctx.font = "bold 9px monospace";
+        // Labels on hub dots facing camera
+        if (isHub && brightness > 0.6) {
+          ctx.font = `bold ${Math.floor(8 * p.scale)}px monospace`;
           ctx.textAlign = "center";
-          ctx.fillStyle = `rgba(232,232,240,${0.25 + glow * 0.25})`;
-          ctx.fillText(n.label, n.x, n.y - n.r - 5);
+          ctx.fillStyle = `rgba(232,232,240,${alpha * 0.7})`;
+          ctx.fillText(LABELS[(i / 14) % LABELS.length], p.sx, p.sy - size * 2 - 3);
         }
-      });
+      }
+
+      // ── Orbit ring around globe ──
+      for (let k = 0; k < 3; k++) {
+        const orbitR = R * (1.15 + k * 0.12);
+        const orbitTilt = [0.4, -0.3, 0.7][k];
+        const pts = [];
+        for (let j = 0; j <= 80; j++) {
+          const a = (j / 80) * Math.PI * 2;
+          const x = Math.cos(a) * orbitR;
+          const y = Math.sin(a) * Math.sin(orbitTilt) * orbitR;
+          const z = Math.sin(a) * Math.cos(orbitTilt) * orbitR;
+          pts.push(project(x, y, z, cx, cy));
+        }
+        ctx.beginPath();
+        pts.forEach((p, idx) => {
+          if (p.z < -R * 0.3) return;
+          if (idx === 0) ctx.moveTo(p.sx, p.sy);
+          else ctx.lineTo(p.sx, p.sy);
+        });
+        ctx.strokeStyle = ["rgba(110,231,247,0.18)","rgba(165,243,192,0.12)","rgba(240,171,252,0.1)"][k];
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+
+        // Orbiting dot
+        const orbAngle = rotY * [1.2, -0.8, 1.6][k];
+        const ox = Math.cos(orbAngle) * orbitR;
+        const oy = Math.sin(orbAngle) * Math.sin(orbitTilt) * orbitR;
+        const oz = Math.sin(orbAngle) * Math.cos(orbitTilt) * orbitR;
+        const op = project(ox, oy, oz, cx, cy);
+        if (op.z > -R * 0.3) {
+          ctx.beginPath();
+          ctx.arc(op.sx, op.sy, 3 * op.scale, 0, Math.PI * 2);
+          ctx.fillStyle = ["#6ee7f7","#a5f3c0","#f0abfc"][k];
+          ctx.fill();
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = ["#6ee7f7","#a5f3c0","#f0abfc"][k];
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      }
+
+      // ── Background neural nodes (left side) ──
+      const nodeCount = 16;
+      for (let i = 0; i < nodeCount; i++) {
+        const nx = (W * 0.05) + Math.sin(i * 1.3 + rotY * 0.3) * W * 0.18;
+        const ny = (H * 0.1) + (i / nodeCount) * H * 0.8 + Math.cos(i * 0.9) * 30;
+        ctx.beginPath();
+        ctx.arc(nx, ny, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(110,231,247,0.2)";
+        ctx.fill();
+        if (i > 0) {
+          const px = (W * 0.05) + Math.sin((i-1) * 1.3 + rotY * 0.3) * W * 0.18;
+          const py = (H * 0.1) + ((i-1) / nodeCount) * H * 0.8 + Math.cos((i-1) * 0.9) * 30;
+          ctx.beginPath();
+          ctx.moveTo(px, py); ctx.lineTo(nx, ny);
+          ctx.strokeStyle = "rgba(110,231,247,0.06)";
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
     };
 
     draw(0);
@@ -374,10 +410,7 @@ function ThreeHero() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.85, willChange: "transform" }}
-    />
+    <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.9, willChange: "transform" }} />
   );
 }
 
@@ -685,15 +718,24 @@ function ContactForm() {
 /* ─── PROJECT ROW ───────────────────────────────────────────────────────── */
 function ProjectRow({ p }) {
   const [hov, setHov] = useState(false);
+  const [flipped, setFlipped] = useState(false);
   return (
-    <TiltCard color={p.color}>
+    <div style={{ perspective: "1200px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+    >
+      <div style={{
+        position: "relative", transformStyle: "preserve-3d",
+        transition: "transform 0.7s cubic-bezier(0.23,1,0.32,1)",
+        transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
+        minHeight: 120,
+      }}>
+        {/* FRONT */}
+        <div style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}>
+        <TiltCard color={p.color}>
       <div
-        onMouseEnter={() => setHov(true)}
-        onMouseLeave={() => setHov(false)}
         style={{
           position: "relative", overflow: "hidden",
           padding: "2rem 2.2rem",
-          borderBottom: "1px solid rgba(255,255,255,0.05)",
           background: hov
             ? `linear-gradient(135deg, ${p.color}12 0%, rgba(255,255,255,0.04) 100%)`
             : "rgba(255,255,255,0.015)",
@@ -1408,6 +1450,71 @@ function AnimatedStat({ n, suffix, label, icon }) {
   );
 }
 
+
+/* ─── 3D FLOATING PARTICLES ─────────────────────────────────────────────── */
+function Particles3D() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let W, H, animId;
+    const COUNT = 60;
+    let particles = [];
+
+    const resize = () => {
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W; canvas.height = H;
+    };
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+
+    particles = Array.from({ length: COUNT }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      z: Math.random() * 800 - 400,  // depth -400 to +400
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      vz: (Math.random() - 0.5) * 0.5,
+      color: Math.random() > 0.6 ? "#6ee7f7" : Math.random() > 0.5 ? "#a5f3c0" : "#f0abfc",
+    }));
+
+    let lastFrame = 0;
+    const draw = (now) => {
+      animId = requestAnimationFrame(draw);
+      if (now - lastFrame < 50) return; // 20fps — very light
+      lastFrame = now;
+      ctx.clearRect(0, 0, W, H);
+
+      // Sort by z for depth order
+      particles.sort((a, b) => a.z - b.z);
+
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.z += p.vz;
+        if (p.x < 0 || p.x > W) p.vx *= -1;
+        if (p.y < 0 || p.y > H) p.vy *= -1;
+        if (p.z < -400 || p.z > 400) p.vz *= -1;
+
+        // Perspective projection
+        const fov = 600;
+        const scale = fov / (fov + p.z + 400);
+        const sx = W/2 + (p.x - W/2) * scale;
+        const sy = H/2 + (p.y - H/2) * scale;
+        const r = Math.max(0.5, 2.5 * scale);
+        const alpha = scale * 0.5;
+
+        ctx.beginPath();
+        ctx.arc(sx, sy, r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color.replace(")", `,${alpha})`).replace("rgb", "rgba").replace("#6ee7f7", `rgba(110,231,247,${alpha})`).replace("#a5f3c0", `rgba(165,243,192,${alpha})`).replace("#f0abfc", `rgba(240,171,252,${alpha})`);
+        ctx.fill();
+      });
+    };
+    draw(0);
+    return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); };
+  }, []);
+  return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.6 }} />;
+}
+
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -1464,7 +1571,7 @@ export default function App() {
         .skill-cell { contain: layout style; background:#060810; padding:1.8rem; transition:background 0.3s, transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s; position:relative; overflow:hidden; transform-style:preserve-3d; }
         .skill-cell::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(110,231,247,0.07), transparent 60%); opacity:0; transition:opacity 0.3s; pointer-events:none; }
         .skill-cell:hover::after { opacity:1; }
-        .skill-cell:hover { background:rgba(110,231,247,0.03); transform:perspective(600px) translateZ(12px) scale(1.01); box-shadow:0 20px 60px rgba(0,0,0,0.4), 0 0 30px rgba(110,231,247,0.07); }
+        .skill-cell:hover { background:rgba(110,231,247,0.04); transform:perspective(500px) rotateX(-3deg) translateZ(18px) scale(1.02); box-shadow:0 28px 80px rgba(0,0,0,0.5), 0 0 40px rgba(110,231,247,0.1), inset 0 1px 0 rgba(110,231,247,0.15); }
         .cert-row { contain: layout; display:flex; align-items:center; gap:1.2rem; padding:1rem 1.2rem; border-bottom:1px solid rgba(255,255,255,0.05); transition:all 0.25s; }
         .cert-row:last-child { border-bottom:none; }
         .cert-row:hover { background:rgba(110,231,247,0.04); padding-left:1.8rem; }
@@ -1576,6 +1683,7 @@ export default function App() {
       <ClickRipple />
       <Spotlight />
       <BackToTop />
+      <Particles3D />
       <HireEasterEgg />
       <ScrollProgress />
 
