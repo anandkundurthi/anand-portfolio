@@ -387,23 +387,39 @@ function ThreeHero() {
 /* ─── TILT CARD ─────────────────────────────────────────────────────────── */
 function TiltCard({ children, color }) {
   const ref = useRef(null);
-  // Use direct DOM manipulation instead of setState to avoid React re-renders on every mousemove
+  const shineRef = useRef(null);
   const onMove = useCallback((e) => {
     const el = ref.current; if (!el) return;
     const rect = el.getBoundingClientRect();
-    const rotX = ((e.clientY - rect.top - rect.height / 2) / rect.height) * -8;
-    const rotY = ((e.clientX - rect.left - rect.width / 2) / rect.width) * 8;
-    el.style.transform = `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.015,1.015,1.015)`;
-    el.style.boxShadow = `0 20px 60px rgba(0,0,0,0.4), 0 0 24px ${color}22`;
-    el.style.transition = "box-shadow 0.1s";
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const rotX = ((y - rect.height / 2) / rect.height) * -12;
+    const rotY = ((x - rect.width / 2) / rect.width) * 12;
+    el.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.02,1.02,1.02)`;
+    el.style.boxShadow = `0 24px 80px rgba(0,0,0,0.5), 0 0 40px ${color}18`;
+    el.style.transition = "box-shadow 0.1s, transform 0.1s";
+    // Shine layer follows mouse
+    if (shineRef.current) {
+      const px = (x / rect.width) * 100;
+      const py = (y / rect.height) * 100;
+      shineRef.current.style.background = `radial-gradient(circle at ${px}% ${py}%, rgba(255,255,255,0.06) 0%, transparent 60%)`;
+      shineRef.current.style.opacity = "1";
+    }
   }, [color]);
   const onLeave = useCallback(() => {
     const el = ref.current; if (!el) return;
-    el.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
-    el.style.transition = "all 0.5s cubic-bezier(0.23,1,0.32,1)";
+    el.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
+    el.style.transition = "all 0.6s cubic-bezier(0.23,1,0.32,1)";
     el.style.boxShadow = "none";
+    if (shineRef.current) shineRef.current.style.opacity = "0";
   }, []);
-  return <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} style={{ transformStyle: "preserve-3d", willChange: "transform" }}>{children}</div>;
+  return (
+    <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} style={{ transformStyle: "preserve-3d", willChange: "transform", position: "relative" }}>
+      {/* Shine overlay */}
+      <div ref={shineRef} style={{ position: "absolute", inset: 0, pointerEvents: "none", opacity: 0, transition: "opacity 0.3s", zIndex: 10, borderRadius: "inherit" }} />
+      {children}
+    </div>
+  );
 }
 
 /* Parallax removed for performance */
@@ -613,7 +629,7 @@ function ContactForm() {
         });
         window.emailjs.init("Mffsv4BJ2iFYVa-xe");
       }
-      await window.emailjs.send("service_fgf1mpm", "template_iaq92rz", {
+      await window.emailjs.send("service_fgf1mpm", "gp18zim", {
         from_name: form.name,
         from_email: form.email,
         message: form.message,
@@ -1411,6 +1427,10 @@ export default function App() {
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
+        .scene-3d { transform-style: preserve-3d; perspective: 1000px; }
+        .depth-1 { transform: translateZ(10px); }
+        .depth-2 { transform: translateZ(20px); }
+        .depth-3 { transform: translateZ(40px); }
         * { cursor: none !important; }
         ::-webkit-scrollbar { width: 2px; }
         ::-webkit-scrollbar-thumb { background: #6ee7f7; border-radius: 2px; }
@@ -1437,14 +1457,14 @@ export default function App() {
         .btn-ghost:hover { border-color:#6ee7f7; color:#6ee7f7; transform:translateY(-2px); box-shadow:0 0 15px rgba(110,231,247,0.15); }
         .btn-green { display:inline-flex; align-items:center; gap:8px; background:transparent; color:#4ade80; padding:11px 22px; border:1px solid rgba(74,222,128,0.3); border-radius:4px; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; font-family:monospace; text-decoration:none; transition:all 0.25s; cursor:none; }
         .btn-green:hover { background:rgba(74,222,128,0.07); border-color:#4ade80; transform:translateY(-2px); box-shadow:0 0 15px rgba(74,222,128,0.2); }
-        .stat-card { border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:1.4rem 1rem; text-align:center; background:rgba(255,255,255,0.02); transition:all 0.3s; }
-        .stat-card:hover { border-color:rgba(110,231,247,0.4); transform:translateY(-6px); box-shadow:0 12px 40px rgba(110,231,247,0.1); }
+        .stat-card { border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:1.4rem 1rem; text-align:center; background:rgba(255,255,255,0.02); transition:all 0.4s cubic-bezier(0.23,1,0.32,1); transform-style:preserve-3d; }
+        .stat-card:hover { border-color:rgba(110,231,247,0.45); transform:perspective(400px) translateZ(20px) translateY(-8px) rotateX(-4deg); box-shadow:0 24px 60px rgba(0,0,0,0.5), 0 0 30px rgba(110,231,247,0.12); background:rgba(110,231,247,0.03); }
         .skill-pill { display:inline-block; border:1px solid rgba(110,231,247,0.15); color:rgba(232,232,240,0.5); padding:4px 12px; border-radius:3px; font-size:11px; margin:3px; letter-spacing:0.05em; font-family:monospace; transition:all 0.2s; }
         .skill-pill:hover { border-color:#6ee7f7; color:#6ee7f7; background:rgba(110,231,247,0.07); box-shadow:0 0 10px rgba(110,231,247,0.2); }
-        .skill-cell { contain: layout style; background:#060810; padding:1.8rem; transition:background 0.3s; position:relative; overflow:hidden; }
-        .skill-cell::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(110,231,247,0.06), transparent 60%); opacity:0; transition:opacity 0.3s; pointer-events:none; }
+        .skill-cell { contain: layout style; background:#060810; padding:1.8rem; transition:background 0.3s, transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s; position:relative; overflow:hidden; transform-style:preserve-3d; }
+        .skill-cell::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(110,231,247,0.07), transparent 60%); opacity:0; transition:opacity 0.3s; pointer-events:none; }
         .skill-cell:hover::after { opacity:1; }
-        .skill-cell:hover { background:rgba(110,231,247,0.03); }
+        .skill-cell:hover { background:rgba(110,231,247,0.03); transform:perspective(600px) translateZ(12px) scale(1.01); box-shadow:0 20px 60px rgba(0,0,0,0.4), 0 0 30px rgba(110,231,247,0.07); }
         .cert-row { contain: layout; display:flex; align-items:center; gap:1.2rem; padding:1rem 1.2rem; border-bottom:1px solid rgba(255,255,255,0.05); transition:all 0.25s; }
         .cert-row:last-child { border-bottom:none; }
         .cert-row:hover { background:rgba(110,231,247,0.04); padding-left:1.8rem; }
@@ -1574,7 +1594,7 @@ export default function App() {
 
       {/* NAV */}
         
-       <nav style={{ position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 2rem", background: "rgba(6,8,16,0.85)", backdropFilter: "blur(12px)" }}>
+       <nav style={{ position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 2rem", background: scrolled ? "rgba(6,8,16,0.97)" : "rgba(6,8,16,0.85)", backdropFilter: "blur(20px)", boxShadow: scrolled ? "0 8px 40px rgba(0,0,0,0.4), 0 1px 0 rgba(110,231,247,0.08)" : "none", transform: scrolled ? "perspective(800px) translateZ(0px)" : "none", transition: "all 0.4s cubic-bezier(0.23,1,0.32,1)" }}>
 
   <span className="syne" style={{ fontWeight: 800, fontSize: "1.1rem", color: "#f0f0f8" }}>
     AK<span style={{ color: "#6ee7f7" }}>.</span>
@@ -1598,10 +1618,17 @@ export default function App() {
 </nav>
 
       {/* HERO */}
-      <SectionReveal><section id="about" className="hero-section" style={{ minHeight: "95vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "5rem 4rem 3rem", position: "relative", overflow: "hidden" }}>
+      <SectionReveal><section id="about" className="hero-section" style={{ minHeight: "95vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "5rem 4rem 3rem", position: "relative", overflow: "hidden", perspective: "1200px" }}>
         <ThreeHero />
-        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1 }}>
+        {/* 3D floating orbs — depth layers */}
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 1, transformStyle: "preserve-3d" }}>
           <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(110,231,247,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(110,231,247,0.025) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
+          {/* Depth layer 1 — far */}
+          <div style={{ position: "absolute", top: "15%", right: "8%", width: 180, height: 180, borderRadius: "50%", border: "1px solid rgba(110,231,247,0.06)", transform: "translateZ(-60px) rotateX(45deg)", animation: "floatY 7s ease infinite" }} />
+          {/* Depth layer 2 — mid */}
+          <div style={{ position: "absolute", bottom: "20%", left: "5%", width: 120, height: 120, borderRadius: "50%", border: "1px solid rgba(165,243,192,0.07)", transform: "translateZ(-30px) rotateY(30deg)", animation: "floatY 9s ease infinite 1s" }} />
+          {/* Depth layer 3 — near */}
+          <div style={{ position: "absolute", top: "40%", right: "15%", width: 60, height: 60, borderRadius: "50%", background: "radial-gradient(circle, rgba(110,231,247,0.08), transparent)", transform: "translateZ(20px)", animation: "floatY 5s ease infinite 2s" }} />
         </div>
 
         <div style={{ position: "relative", zIndex: 2 }}>
@@ -1630,13 +1657,30 @@ export default function App() {
                 <div className="hero-btns" style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap" }}>
                   <button className="btn-cyan" onClick={() => scrollTo("projects")}>View Projects</button>
                   <a href="https://ai-resume-analyzer-tuet.onrender.com" target="_blank" rel="noreferrer" className="btn-ghost">Live Project</a>
-		  <a href="https://drive.google.com/uc?export=download&id=12QI2AMCw2AAREqS6WJboZ65z51a9vMiU" target="_blank" rel="noreferrer" className="btn-green">Resume</a>
+                  <a href="https://drive.google.com/file/d/1PEuAK9LEg8flKRgUPYbi0wOdSpA7Qx7U/view" target="_blank" rel="noreferrer" className="btn-green">Resume</a>
                   <button className="btn-ghost" onClick={() => scrollTo("contact")}>Say Hello</button>
                 </div>
               </div>
             </div>
             {/* Avatar side */}
-            <div style={{ flexShrink: 0, animation: "avatarFloat 5s ease infinite" }} className="avatar-wrap">
+            <div
+              className="avatar-wrap"
+              style={{ flexShrink: 0, animation: "avatarFloat 5s ease infinite", transformStyle: "preserve-3d", willChange: "transform" }}
+              onMouseMove={(e) => {
+                const el = e.currentTarget;
+                const rect = el.getBoundingClientRect();
+                const rotY = ((e.clientX - rect.left - rect.width/2) / rect.width) * 20;
+                const rotX = ((e.clientY - rect.top - rect.height/2) / rect.height) * -20;
+                el.style.transform = `perspective(600px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.04)`;
+                el.style.transition = "transform 0.1s";
+                el.style.animationPlayState = "paused";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "";
+                e.currentTarget.style.transition = "transform 0.6s cubic-bezier(0.23,1,0.32,1)";
+                e.currentTarget.style.animationPlayState = "running";
+              }}
+            >
               <Avatar />
             </div>
           </div>
