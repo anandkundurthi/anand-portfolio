@@ -806,8 +806,39 @@ function ProjectRow({ p }) {
         </div>
         {/* Description */}
         <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.42)", lineHeight: 1.75, margin: 0, maxWidth: 720 }}>{p.desc}</p>
+        {/* Flip button */}
+        <button onClick={() => setFlipped(true)} style={{ marginTop: 12, fontFamily: "monospace", fontSize: 9, color: p.color, border: `1px solid ${p.color}33`, background: `${p.color}08`, borderRadius: 4, padding: "4px 10px", cursor: "none", opacity: hov ? 1 : 0, transition: "opacity 0.3s" }}>
+          Details ↻
+        </button>
       </div>
     </TiltCard>
+        </div>
+        {/* BACK FACE */}
+        <div style={{
+          position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
+          transform: "rotateY(180deg)", background: `linear-gradient(135deg, ${p.color}15, rgba(6,8,16,0.98))`,
+          borderLeft: `3px solid ${p.color}`, padding: "1.8rem 2.2rem",
+          display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 120,
+        }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+              <span className="syne" style={{ fontWeight: 800, fontSize: "1rem", color: p.color }}>{p.emoji} {p.name}</span>
+              <button onClick={() => setFlipped(false)} style={{ fontFamily: "monospace", fontSize: 9, color: "rgba(232,232,240,0.4)", border: "1px solid rgba(255,255,255,0.1)", background: "transparent", borderRadius: 4, padding: "4px 10px", cursor: "none" }}>← Back</button>
+            </div>
+            <p style={{ fontSize: 12, color: "rgba(232,232,240,0.6)", lineHeight: 1.9, marginBottom: "1rem" }}>{p.desc}</p>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            {p.type.split(" · ").map(t => (
+              <span key={t} style={{ fontFamily: "monospace", fontSize: 10, color: p.color, background: `${p.color}15`, border: `1px solid ${p.color}30`, borderRadius: 3, padding: "3px 8px" }}>{t}</span>
+            ))}
+            <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+              <a href={p.github} target="_blank" rel="noreferrer" style={{ fontFamily: "monospace", fontSize: 10, color: "#f0f0f8", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 4, padding: "5px 12px", textDecoration: "none" }}>GitHub ↗</a>
+              {p.live && <a href={p.live} target="_blank" rel="noreferrer" style={{ fontFamily: "monospace", fontSize: 10, color: "#4ade80", border: "1px solid rgba(74,222,128,0.3)", borderRadius: 4, padding: "5px 12px", textDecoration: "none" }}>Live ↗</a>}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
