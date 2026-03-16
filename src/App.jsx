@@ -63,10 +63,14 @@ function MobileNav({ scrollTo }) {
       {open && (
         <div style={{
           position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-          background: "rgba(6,8,16,0.98)", backdropFilter: "blur(20px)",
+          background: "rgba(6,8,16,0.97)", backdropFilter: "blur(24px)",
           zIndex: 9998, display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center", gap: "2.5rem"
+          alignItems: "center", justifyContent: "center", gap: "2.5rem",
+          animation: "overlayIn 0.4s cubic-bezier(0.23,1,0.32,1)",
+          borderLeft: "1px solid rgba(110,231,247,0.08)",
         }}>
+          {/* Neon vertical accent */}
+          <div style={{ position: "absolute", left: 0, top: "10%", bottom: "10%", width: "2px", background: "linear-gradient(transparent, #6ee7f7, transparent)", opacity: 0.3 }} />
           {/* Close button */}
           <button
             onClick={() => setOpen(false)}
@@ -78,14 +82,20 @@ function MobileNav({ scrollTo }) {
             AK<span style={{ color: "#6ee7f7" }}>.</span>
           </div>
 
-          {/* Nav links */}
+          {/* Nav links — staggered 3D entrance */}
           {["About","Skills","Projects","Education","Contact"].map((n, i) => (
             <button
               key={n}
               onClick={() => { setOpen(false); setTimeout(() => scrollTo(n), 300); }}
-              style={{ background: "none", border: "none", color: "rgba(232,232,240,0.7)", fontSize: "2.2rem", fontFamily: "'Syne',sans-serif", fontWeight: 800, cursor: "none", letterSpacing: "-0.02em", transition: "color 0.2s", padding: "0.2rem 0" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#6ee7f7"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(232,232,240,0.7)"}
+              style={{
+                background: "none", border: "none", color: "rgba(232,232,240,0.7)",
+                fontSize: "2.2rem", fontFamily: "'Syne',sans-serif", fontWeight: 800,
+                cursor: "none", letterSpacing: "-0.02em", padding: "0.2rem 0",
+                animation: `slideIn3D 0.6s cubic-bezier(0.23,1,0.32,1) ${i * 0.08}s both`,
+                transformStyle: "preserve-3d",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#6ee7f7"; e.currentTarget.style.textShadow = "0 0 30px rgba(110,231,247,0.7)"; e.currentTarget.style.transform = "perspective(400px) translateZ(20px) translateX(8px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "rgba(232,232,240,0.7)"; e.currentTarget.style.textShadow = "none"; e.currentTarget.style.transform = ""; }}
             >{n}</button>
           ))}
 
@@ -566,12 +576,27 @@ function CustomCursor() {
     cacheBtns();
     const cacheInterval = setInterval(cacheBtns, 2000);
 
+    let lastX = 0, lastY = 0;
     const onMove = (e) => {
       const x = e.clientX, y = e.clientY;
       pos.current = { x, y };
-      // Dot follows mouse instantly via direct style — no lerp needed
+      // Velocity-based color shift
+      const vx = x - lastX, vy = y - lastY;
+      const speed = Math.sqrt(vx*vx + vy*vy);
+      lastX = x; lastY = y;
       if (dot.current) {
         dot.current.style.transform = `translate(${x - 3}px, ${y - 3}px)`;
+        // Color shifts cyan→purple at high speed
+        if (speed > 20) {
+          dot.current.style.background = "#f0abfc";
+          dot.current.style.boxShadow = "0 0 14px rgba(240,171,252,1), 0 0 28px rgba(240,171,252,0.4)";
+        } else if (speed > 8) {
+          dot.current.style.background = "#a5f3c0";
+          dot.current.style.boxShadow = "0 0 12px rgba(165,243,192,1), 0 0 24px rgba(165,243,192,0.4)";
+        } else {
+          dot.current.style.background = "#6ee7f7";
+          dot.current.style.boxShadow = "0 0 12px rgba(110,231,247,1), 0 0 24px rgba(110,231,247,0.4)";
+        }
       }
       // Magnetic pull on cached buttons — no DOM query here
       btnsRef.current.forEach(btn => {
@@ -616,21 +641,22 @@ function CustomCursor() {
 
   return (
     <>
-      {/* Main dot — no transform:translate(-50%,-50%), use offset instead */}
+      {/* Main dot */}
       <div ref={dot} style={{
         position: "fixed", top: 0, left: 0,
-        width: 6, height: 6, background: "#6ee7f7",
+        width: 7, height: 7, background: "#6ee7f7",
         borderRadius: "50%", pointerEvents: "none", zIndex: 9999,
-        boxShadow: "0 0 10px rgba(110,231,247,0.9)",
-        willChange: "transform",
+        boxShadow: "0 0 12px rgba(110,231,247,1), 0 0 24px rgba(110,231,247,0.4)",
+        willChange: "transform", transition: "background 0.2s, box-shadow 0.2s",
       }} />
       {/* Lagging ring */}
       <div ref={ring} style={{
         position: "fixed", top: 0, left: 0,
         width: 36, height: 36,
-        border: "1.5px solid rgba(110,231,247,0.45)",
+        border: "1.5px solid rgba(110,231,247,0.5)",
         borderRadius: "50%", pointerEvents: "none", zIndex: 9998,
-        willChange: "transform",
+        willChange: "transform", transition: "border-color 0.2s, transform 0.05s",
+        backdropFilter: "blur(0px)",
       }} />
     </>
   );
@@ -731,28 +757,51 @@ function ContactForm() {
   };
 
   const inputStyle = (field) => ({
-    width: "100%", background: focused === field ? "rgba(110,231,247,0.04)" : "rgba(255,255,255,0.02)",
-    border: `1px solid ${focused === field ? "rgba(110,231,247,0.4)" : "rgba(255,255,255,0.08)"}`,
-    borderRadius: 6, padding: "12px 16px", color: "#f0f0f8", fontSize: 13, fontFamily: "'DM Sans', sans-serif",
-    outline: "none", transition: "all 0.25s", resize: "none",
-    boxShadow: focused === field ? "0 0 20px rgba(110,231,247,0.08)" : "none",
+    width: "100%",
+    background: focused === field ? "rgba(110,231,247,0.05)" : "rgba(255,255,255,0.02)",
+    border: `1px solid ${focused === field ? "rgba(110,231,247,0.6)" : "rgba(255,255,255,0.08)"}`,
+    borderRadius: 6, padding: "14px 16px", color: "#f0f0f8", fontSize: 13,
+    fontFamily: "'DM Sans', sans-serif", outline: "none", transition: "all 0.3s", resize: "none",
+    boxShadow: focused === field
+      ? "0 0 0 1px rgba(110,231,247,0.15), 0 0 20px rgba(110,231,247,0.12), inset 0 1px 0 rgba(110,231,247,0.08)"
+      : "none",
   });
 
+  const FloatField = ({ label, children, field }) => (
+    <div style={{ position: "relative", paddingTop: "1.2rem" }}>
+      <label style={{
+        position: "absolute", top: focused === field || form[field] ? "0" : "1.8rem",
+        left: "16px", fontSize: focused === field || form[field] ? 9 : 12,
+        color: focused === field ? "#6ee7f7" : "rgba(232,232,240,0.3)",
+        letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "monospace",
+        transition: "all 0.25s cubic-bezier(0.23,1,0.32,1)", pointerEvents: "none", zIndex: 1,
+        textShadow: focused === field ? "0 0 10px rgba(110,231,247,0.6)" : "none",
+      }}>{label}</label>
+      {children}
+    </div>
+  );
+
   return (
-    <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(110,231,247,0.1)", borderRadius: 12, padding: "2rem", maxWidth: 500, margin: "0 auto", backdropFilter: "blur(10px)" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
-        <div>
-          <label style={{ fontSize: 10, color: "rgba(110,231,247,0.6)", letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "monospace", display: "block", marginBottom: 6 }}>Name</label>
-          <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} onFocus={() => setFocused("name")} onBlur={() => setFocused(null)} placeholder="Your name" style={inputStyle("name")} />
-        </div>
-        <div>
-          <label style={{ fontSize: 10, color: "rgba(110,231,247,0.6)", letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "monospace", display: "block", marginBottom: 6 }}>Email</label>
-          <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} onFocus={() => setFocused("email")} onBlur={() => setFocused(null)} placeholder="your@email.com" style={inputStyle("email")} />
-        </div>
+    <div style={{
+      background: "rgba(255,255,255,0.02)", border: "1px solid rgba(110,231,247,0.12)",
+      borderRadius: 12, padding: "2rem", maxWidth: 500, margin: "0 auto",
+      backdropFilter: "blur(16px)", position: "relative", overflow: "hidden",
+      boxShadow: "0 0 40px rgba(110,231,247,0.04), inset 0 1px 0 rgba(110,231,247,0.06)",
+    }}>
+      {/* Top neon line */}
+      <div style={{ position: "absolute", top: 0, left: "20%", right: "20%", height: "1px", background: "linear-gradient(90deg, transparent, rgba(110,231,247,0.4), transparent)" }} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.2rem" }}>
+        <FloatField label="Name" field="name">
+          <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} onFocus={() => setFocused("name")} onBlur={() => setFocused(null)} placeholder="" style={inputStyle("name")} />
+        </FloatField>
+        <FloatField label="Email" field="email">
+          <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} onFocus={() => setFocused("email")} onBlur={() => setFocused(null)} placeholder="" style={inputStyle("email")} />
+        </FloatField>
       </div>
       <div style={{ marginBottom: "1.2rem" }}>
-        <label style={{ fontSize: 10, color: "rgba(110,231,247,0.6)", letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "monospace", display: "block", marginBottom: 6 }}>Message</label>
-        <textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} onFocus={() => setFocused("message")} onBlur={() => setFocused(null)} placeholder="Tell me about your project or opportunity..." rows={4} style={inputStyle("message")} />
+        <FloatField label="Message" field="message">
+          <textarea value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} onFocus={() => setFocused("message")} onBlur={() => setFocused(null)} placeholder="" rows={4} style={inputStyle("message")} />
+        </FloatField>
       </div>
       <button
         onClick={handleSubmit}
@@ -962,22 +1011,33 @@ function ClickRipple() {
 /* ─── SPOTLIGHT ──────────────────────────────────────────────────────────── */
 function Spotlight() {
   const ref = useRef(null);
+  const ref2 = useRef(null);
+  const ref3 = useRef(null);
   useEffect(() => {
-    const el = ref.current;
-    const onMove = (e) => {
-      if (el) { el.style.left = e.clientX + "px"; el.style.top = e.clientY + "px"; }
+    let x = 0, y = 0, tx = 0, ty = 0;
+    const onMove = (e) => { tx = e.clientX; ty = e.clientY; };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    let animId;
+    const tick = () => {
+      animId = requestAnimationFrame(tick);
+      x += (tx - x) * 0.08; y += (ty - y) * 0.08;
+      const s = `translate(-50%,-50%)`;
+      if (ref.current)  { ref.current.style.left  = x + "px"; ref.current.style.top  = y + "px"; }
+      if (ref2.current) { ref2.current.style.left = (x + 8)  + "px"; ref2.current.style.top = (y - 4) + "px"; }
+      if (ref3.current) { ref3.current.style.left = (x - 6)  + "px"; ref3.current.style.top = (y + 6) + "px"; }
     };
-    window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
+    tick();
+    return () => { window.removeEventListener("mousemove", onMove); cancelAnimationFrame(animId); };
   }, []);
   return (
-    <div ref={ref} style={{
-      position: "fixed", width: 500, height: 500,
-      borderRadius: "50%", pointerEvents: "none", zIndex: 1,
-      transform: "translate(-50%,-50%)",
-      background: "radial-gradient(circle, rgba(110,231,247,0.04) 0%, transparent 65%)",
-      transition: "left 0.08s linear, top 0.08s linear",
-    }} />
+    <>
+      {/* Primary cyan spotlight */}
+      <div ref={ref} style={{ position: "fixed", width: 600, height: 600, borderRadius: "50%", pointerEvents: "none", zIndex: 1, transform: "translate(-50%,-50%)", background: "radial-gradient(circle, rgba(110,231,247,0.055) 0%, rgba(110,231,247,0.01) 40%, transparent 70%)", mixBlendMode: "screen" }} />
+      {/* Chromatic red offset */}
+      <div ref={ref2} style={{ position: "fixed", width: 400, height: 400, borderRadius: "50%", pointerEvents: "none", zIndex: 1, transform: "translate(-50%,-50%)", background: "radial-gradient(circle, rgba(240,100,100,0.02) 0%, transparent 65%)", mixBlendMode: "screen" }} />
+      {/* Chromatic blue offset */}
+      <div ref={ref3} style={{ position: "fixed", width: 400, height: 400, borderRadius: "50%", pointerEvents: "none", zIndex: 1, transform: "translate(-50%,-50%)", background: "radial-gradient(circle, rgba(100,100,255,0.02) 0%, transparent 65%)", mixBlendMode: "screen" }} />
+    </>
   );
 }
 
@@ -998,23 +1058,47 @@ function HireEasterEgg() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
   if (!show) return null;
+  const confettiColors = ["#6ee7f7","#a5f3c0","#f0abfc","#fde68a","#fca5a5","#93c5fd","#fff"];
+  const confettiPieces = Array.from({length: 60}, (_, i) => ({
+    id: i,
+    x: 40 + Math.random() * 20,
+    color: confettiColors[i % confettiColors.length],
+    size: 4 + Math.random() * 6,
+    tx: (Math.random() - 0.5) * 300,
+    ty: -(80 + Math.random() * 200),
+    rot: Math.random() * 720 - 360,
+    delay: Math.random() * 0.4,
+    shape: Math.random() > 0.5 ? "circle" : "rect",
+  }));
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 9993, pointerEvents: "none",
-      display: "flex", alignItems: "center", justifyContent: "center",
-    }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 9993, pointerEvents: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      {/* Confetti */}
+      {confettiPieces.map(p => (
+        <div key={p.id} style={{
+          position: "absolute", left: `${p.x}%`, top: "55%",
+          width: p.size, height: p.shape === "rect" ? p.size * 2.5 : p.size,
+          background: p.color, borderRadius: p.shape === "circle" ? "50%" : 2,
+          boxShadow: `0 0 6px ${p.color}`,
+          animation: `confettiFly 1.2s cubic-bezier(0.23,1,0.32,1) ${p.delay}s both`,
+          "--tx": `${p.tx}px`, "--ty": `${p.ty}px`, "--rot": `${p.rot}deg`,
+        }} />
+      ))}
+      {/* Card */}
       <div style={{
-        background: "rgba(6,8,16,0.97)", border: "1px solid rgba(110,231,247,0.4)",
-        borderRadius: 16, padding: "2.5rem 4rem", textAlign: "center",
-        backdropFilter: "blur(20px)", boxShadow: "0 0 80px rgba(110,231,247,0.15)",
-        animation: "toastSlide 0.4s cubic-bezier(0.22,1,0.36,1)",
+        background: "rgba(6,8,16,0.97)", border: "1px solid rgba(110,231,247,0.5)",
+        borderRadius: 20, padding: "2.5rem 4rem", textAlign: "center",
+        backdropFilter: "blur(24px)",
+        boxShadow: "0 0 100px rgba(110,231,247,0.2), 0 0 40px rgba(110,231,247,0.1), inset 0 1px 0 rgba(110,231,247,0.15)",
+        animation: "easterIn 0.5s cubic-bezier(0.22,1,0.36,1)",
+        position: "relative", overflow: "hidden",
       }}>
-        <div style={{ fontSize: "3rem", marginBottom: "0.8rem" }}>🎉</div>
-        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.8rem", color: "#6ee7f7", marginBottom: "0.5rem" }}>
+        <div style={{ position: "absolute", top: 0, left: "20%", right: "20%", height: "1px", background: "linear-gradient(90deg,transparent,#6ee7f7,transparent)" }} />
+        <div style={{ fontSize: "3.5rem", marginBottom: "0.8rem", animation: "bounceIn 0.6s cubic-bezier(0.22,1,0.36,1) 0.2s both" }}>🎉</div>
+        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "2rem", color: "#6ee7f7", marginBottom: "0.5rem", textShadow: "0 0 30px rgba(110,231,247,0.6)" }}>
           Great taste!
         </div>
         <div style={{ fontFamily: "monospace", fontSize: 12, color: "rgba(232,232,240,0.5)", letterSpacing: "0.08em" }}>
-          You typed <span style={{ color: "#6ee7f7" }}>"hire"</span> — scroll to Contact ↓
+          You typed <span style={{ color: "#6ee7f7", textShadow: "0 0 8px rgba(110,231,247,0.6)" }}>"hire"</span> — scroll to Contact ↓
         </div>
       </div>
     </div>
@@ -1203,14 +1287,24 @@ function ProjectFilter({ active, onChange }) {
       {filters.map(f => (
         <button key={f} onClick={() => onChange(f)}
           style={{
-            background: active === f ? "rgba(110,231,247,0.12)" : "transparent",
-            border: `1px solid ${active === f ? "rgba(110,231,247,0.5)" : "rgba(255,255,255,0.1)"}`,
-            color: active === f ? "#6ee7f7" : "rgba(232,232,240,0.4)",
-            borderRadius: 20, padding: "5px 16px", fontSize: 11, fontFamily: "monospace",
-            letterSpacing: "0.06em", cursor: "none", transition: "all 0.2s",
-            boxShadow: active === f ? "0 0 12px rgba(110,231,247,0.15)" : "none",
-          }}>
-          {f}
+            background: active === f ? "rgba(110,231,247,0.1)" : "rgba(255,255,255,0.02)",
+            border: `1px solid ${active === f ? "rgba(110,231,247,0.6)" : "rgba(255,255,255,0.08)"}`,
+            color: active === f ? "#6ee7f7" : "rgba(232,232,240,0.35)",
+            borderRadius: 20, padding: "6px 18px", fontSize: 11, fontFamily: "monospace",
+            letterSpacing: "0.08em", cursor: "none",
+            transition: "all 0.2s cubic-bezier(0.23,1,0.32,1)",
+            boxShadow: active === f
+              ? "0 0 20px rgba(110,231,247,0.25), 0 0 40px rgba(110,231,247,0.1), inset 0 1px 0 rgba(110,231,247,0.2)"
+              : "none",
+            textShadow: active === f ? "0 0 10px rgba(110,231,247,0.8)" : "none",
+            transform: active === f ? "perspective(200px) translateZ(4px)" : "none",
+          }}
+          onMouseEnter={e => { if (active !== f) { e.currentTarget.style.borderColor = "rgba(110,231,247,0.3)"; e.currentTarget.style.color = "rgba(110,231,247,0.7)"; e.currentTarget.style.transform = "perspective(200px) translateZ(4px) translateY(-1px)"; }}}
+          onMouseLeave={e => { if (active !== f) { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "rgba(232,232,240,0.35)"; e.currentTarget.style.transform = "none"; }}}
+          onMouseDown={e => { e.currentTarget.style.transform = "perspective(200px) translateZ(-2px) scale(0.96)"; }}
+          onMouseUp={e => { e.currentTarget.style.transform = active === f ? "perspective(200px) translateZ(4px)" : "none"; }}
+        >
+          {active === f && <span style={{ marginRight: 5, fontSize: 7, verticalAlign: "middle" }}>●</span>}{f}
         </button>
       ))}
     </div>
@@ -1534,8 +1628,10 @@ function LookingFor() {
 /* ─── ANIMATED STAT COUNTER (scroll-triggered) ───────────────────────────── */
 function AnimatedStat({ n, suffix, label, icon }) {
   const [count, setCount] = useState(0);
+  const [flipping, setFlipping] = useState(false);
   const ref = useRef(null);
   const started = useRef(false);
+  const prevCount = useRef(0);
   useEffect(() => {
     const obs = new IntersectionObserver(([e]) => {
       if (e.isIntersecting && !started.current) {
@@ -1545,7 +1641,13 @@ function AnimatedStat({ n, suffix, label, icon }) {
         const inc = n / steps;
         const t = setInterval(() => {
           start = Math.min(start + inc, n);
-          setCount(Math.floor(start));
+          const newCount = Math.floor(start);
+          if (newCount !== prevCount.current) {
+            setFlipping(true);
+            setTimeout(() => setFlipping(false), 120);
+            prevCount.current = newCount;
+          }
+          setCount(newCount);
           if (start >= n) clearInterval(t);
         }, 1400 / steps);
       }
@@ -1555,11 +1657,20 @@ function AnimatedStat({ n, suffix, label, icon }) {
   }, [n]);
   return (
     <div ref={ref} className="stat-card" style={{ textAlign: "center", padding: "2rem 1.5rem" }}>
-      <div style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}>{icon}</div>
-      <div className="syne" style={{ fontSize: "2.4rem", fontWeight: 800, color: "#6ee7f7", lineHeight: 1, marginBottom: 6, textShadow: "0 0 20px rgba(110,231,247,0.4)" }}>
-        {count}{suffix}
+      <div style={{ fontSize: "2rem", marginBottom: "0.5rem", filter: "drop-shadow(0 0 8px rgba(110,231,247,0.4))" }}>{icon}</div>
+      <div style={{ position: "relative", overflow: "hidden", height: "3rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {/* Odometer flip effect */}
+        <div className="syne" style={{
+          fontSize: "2.4rem", fontWeight: 800, color: "#6ee7f7", lineHeight: 1,
+          textShadow: "0 0 24px rgba(110,231,247,0.6), 0 0 48px rgba(110,231,247,0.2)",
+          transform: flipping ? "translateY(-100%) rotateX(90deg)" : "translateY(0) rotateX(0deg)",
+          transition: flipping ? "none" : "transform 0.12s cubic-bezier(0.23,1,0.32,1)",
+          display: "inline-block", transformStyle: "preserve-3d",
+        }}>
+          {count}{suffix}
+        </div>
       </div>
-      <div style={{ fontSize: 10, color: "rgba(232,232,240,0.32)", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "monospace" }}>{label}</div>
+      <div style={{ fontSize: 10, color: "rgba(232,232,240,0.32)", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "monospace", marginTop: 4 }}>{label}</div>
     </div>
   );
 }
@@ -1734,6 +1845,11 @@ export default function App() {
         @keyframes glitch1 { 0%,85%,100%{opacity:0;transform:translate(0)} 86%{opacity:0.7;transform:translate(-3px,0);clip-path:inset(20% 0 50% 0)} 88%{opacity:0.7;transform:translate(3px,0);clip-path:inset(60% 0 15% 0)} 90%{opacity:0;} }
         @keyframes glitch2 { 0%,87%,100%{opacity:0;transform:translate(0)} 88%{opacity:0.5;transform:translate(3px,0);clip-path:inset(40% 0 30% 0)} 89%{opacity:0.5;transform:translate(-3px,0);clip-path:inset(10% 0 70% 0)} 91%{opacity:0;} }
         @keyframes neonFlicker { 0%,95%,100%{opacity:1} 96%{opacity:0.7} 97%{opacity:1} 98%{opacity:0.5} 99%{opacity:1} }
+        @keyframes confettiFly { 0%{opacity:1;transform:translate(0,0) rotate(0deg)} 100%{opacity:0;transform:translate(var(--tx),var(--ty)) rotate(var(--rot))} }
+        @keyframes easterIn { from{opacity:0;transform:scale(0.7) translateY(20px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        @keyframes bounceIn { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+        @keyframes slideIn3D { from{opacity:0;transform:perspective(400px) rotateY(-12deg) translateX(-40px)} to{opacity:1;transform:perspective(400px) rotateY(0deg) translateX(0)} }
+        @keyframes overlayIn { from{opacity:0;transform:perspective(800px) rotateY(-4deg)} to{opacity:1;transform:perspective(800px) rotateY(0deg)} }
         @keyframes signalBar { 0%,100%{transform:scaleY(1);opacity:0.7} 50%{transform:scaleY(1.6);opacity:1} }
         @keyframes lensFlare { 0%,100%{opacity:0;transform:translate(-50%,-50%) scale(0.8)} 50%{opacity:1;transform:translate(-50%,-50%) scale(1)} }
         @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
