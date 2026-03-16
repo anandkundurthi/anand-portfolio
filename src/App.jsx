@@ -1044,20 +1044,28 @@ function BuildingTicker() {
   }, []);
   return (
     <div style={{
-      background: "rgba(110,231,247,0.04)", borderTop: "1px solid rgba(110,231,247,0.08)",
-      borderBottom: "1px solid rgba(110,231,247,0.08)", padding: "0.65rem 4rem",
-      display: "flex", alignItems: "center", gap: "1rem", overflow: "hidden",
-      position: "relative", zIndex: 2,
+      background: "linear-gradient(90deg, rgba(110,231,247,0.06), rgba(165,243,192,0.03), rgba(110,231,247,0.06))",
+      borderTop: "1px solid rgba(110,231,247,0.12)", borderBottom: "1px solid rgba(110,231,247,0.12)",
+      padding: "0.7rem 4rem", display: "flex", alignItems: "center", gap: "1.2rem",
+      overflow: "hidden", position: "relative", zIndex: 2,
     }}>
-      <span style={{ fontSize: 9, fontFamily: "monospace", letterSpacing: "0.18em", color: "#4ade80", textTransform: "uppercase", whiteSpace: "nowrap", flexShrink: 0 }}>
-        ● LIVE
+      {/* Animated signal bar */}
+      <div style={{ display: "flex", alignItems: "center", gap: 3, flexShrink: 0 }}>
+        {[0.4,0.7,1,0.7,0.4].map((h,i) => (
+          <div key={i} style={{ width: 2, height: `${h*14}px`, background: "#4ade80", borderRadius: 2, animation: `signalBar 1s ease infinite`, animationDelay: `${i*0.12}s`, boxShadow: "0 0 6px rgba(74,222,128,0.7)" }} />
+        ))}
+      </div>
+      <span style={{ fontSize: 9, fontFamily: "monospace", letterSpacing: "0.22em", color: "#4ade80", textTransform: "uppercase", whiteSpace: "nowrap", flexShrink: 0, textShadow: "0 0 10px rgba(74,222,128,0.7)" }}>
+        LIVE
       </span>
-      <div style={{ width: 1, height: 14, background: "rgba(110,231,247,0.2)", flexShrink: 0 }} />
+      <div style={{ width: 1, height: 16, background: "linear-gradient(transparent, rgba(110,231,247,0.4), transparent)", flexShrink: 0 }} />
       <span style={{
-        fontSize: 11, fontFamily: "monospace", color: "rgba(232,232,240,0.55)",
-        letterSpacing: "0.05em", opacity: visible ? 1 : 0,
-        transition: "opacity 0.4s ease",
+        fontSize: 11, fontFamily: "monospace", color: "rgba(232,232,240,0.7)",
+        letterSpacing: "0.06em", opacity: visible ? 1 : 0,
+        transition: "opacity 0.4s ease", textShadow: visible ? "0 0 8px rgba(110,231,247,0.3)" : "none",
       }}>{items[idx]}</span>
+      {/* Shimmer sweep */}
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, transparent 0%, rgba(110,231,247,0.04) 50%, transparent 100%)", animation: "shimmer 3s linear infinite", pointerEvents: "none" }} />
     </div>
   );
 }
@@ -1080,10 +1088,13 @@ function AchievementsStrip() {
       flexWrap: "wrap", gap: "1.5rem", position: "relative", zIndex: 2,
     }}>
       {items.map((item, i) => (
-        <div key={i} style={{ textAlign: "center", flex: "1 1 120px" }}>
-          <div style={{ fontSize: "1.4rem", marginBottom: "0.3rem" }}>{item.icon}</div>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.5rem", color: "#6ee7f7", textShadow: "0 0 16px rgba(110,231,247,0.4)" }}>{item.val}</div>
-          <div style={{ fontSize: 10, fontFamily: "monospace", color: "rgba(232,232,240,0.35)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{item.label}</div>
+        <div key={i} style={{ textAlign: "center", flex: "1 1 120px", transition: "transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s", borderRadius: 8, padding: "1rem 0.5rem", cursor: "default" }}
+          onMouseEnter={e => { e.currentTarget.style.transform = `perspective(400px) translateZ(20px) translateY(-6px) rotateX(-4deg)`; e.currentTarget.style.boxShadow = `0 20px 50px rgba(0,0,0,0.4), 0 0 30px rgba(110,231,247,0.1)`; e.currentTarget.style.background = "rgba(110,231,247,0.03)"; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.background = "transparent"; }}
+        >
+          <div style={{ fontSize: "1.8rem", marginBottom: "0.4rem", filter: "drop-shadow(0 0 8px rgba(110,231,247,0.4))" }}>{item.icon}</div>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "2rem", color: "#6ee7f7", textShadow: "0 0 20px rgba(110,231,247,0.6), 0 0 40px rgba(110,231,247,0.2)", lineHeight: 1 }}>{item.val}</div>
+          <div style={{ fontSize: 9, fontFamily: "monospace", color: "rgba(232,232,240,0.35)", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: 4 }}>{item.label}</div>
         </div>
       ))}
     </div>
@@ -1096,19 +1107,30 @@ function QuoteBlock() {
     <div style={{ padding: "5rem 4rem", position: "relative", zIndex: 2, background: "rgba(255,255,255,0.008)" }}>
       <div style={{
         maxWidth: 740, margin: "0 auto", textAlign: "center",
-        border: "1px solid rgba(110,231,247,0.1)", borderRadius: 16,
-        padding: "3rem 3.5rem", background: "rgba(110,231,247,0.02)",
-        backdropFilter: "blur(10px)", position: "relative",
-      }}>
-        <div style={{ fontSize: "3rem", lineHeight: 1, marginBottom: "1.5rem", opacity: 0.3, color: "#6ee7f7", fontFamily: "Georgia, serif" }}>"</div>
-        <p style={{ fontSize: "1.1rem", fontFamily: "'Syne', sans-serif", fontWeight: 600, color: "#f0f0f8", lineHeight: 1.7, marginBottom: "1.8rem", letterSpacing: "-0.01em" }}>
+        border: "1px solid rgba(110,231,247,0.15)", borderRadius: 16,
+        padding: "3.5rem 3.5rem", background: "rgba(110,231,247,0.025)",
+        backdropFilter: "blur(20px)", position: "relative", overflow: "hidden",
+        transition: "all 0.5s cubic-bezier(0.23,1,0.32,1)",
+        boxShadow: "0 0 60px rgba(110,231,247,0.04), inset 0 1px 0 rgba(110,231,247,0.12)",
+      }}
+        onMouseEnter={e => { e.currentTarget.style.transform = "perspective(800px) rotateX(-1deg) translateZ(10px)"; e.currentTarget.style.boxShadow = "0 30px 80px rgba(0,0,0,0.4), 0 0 80px rgba(110,231,247,0.08), inset 0 1px 0 rgba(110,231,247,0.2)"; e.currentTarget.style.borderColor = "rgba(110,231,247,0.3)"; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 0 60px rgba(110,231,247,0.04), inset 0 1px 0 rgba(110,231,247,0.12)"; e.currentTarget.style.borderColor = "rgba(110,231,247,0.15)"; }}
+      >
+        {/* Corner accents */}
+        {["tl","tr","bl","br"].map(pos => (
+          <div key={pos} style={{ position: "absolute", width: 20, height: 20, borderColor: "rgba(110,231,247,0.3)", borderStyle: "solid", borderWidth: pos.includes("t") ? "1px 0 0" : "0 0 1px", ...(pos.includes("l") ? { left: 16, borderLeftWidth: 1, borderRightWidth: 0 } : { right: 16, borderRightWidth: 1, borderLeftWidth: 0 }), ...(pos.includes("t") ? { top: 16 } : { bottom: 16 }) }} />
+        ))}
+        {/* Ambient glow inside */}
+        <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 300, height: 100, background: "radial-gradient(ellipse, rgba(110,231,247,0.06), transparent)", filter: "blur(20px)", pointerEvents: "none" }} />
+        <div style={{ fontSize: "4rem", lineHeight: 1, marginBottom: "1.2rem", color: "#6ee7f7", fontFamily: "Georgia, serif", textShadow: "0 0 30px rgba(110,231,247,0.5)", opacity: 0.5 }}>"</div>
+        <p style={{ fontSize: "1.2rem", fontFamily: "'Syne', sans-serif", fontWeight: 600, color: "#f0f0f8", lineHeight: 1.8, marginBottom: "2rem", letterSpacing: "-0.01em", textShadow: "0 0 20px rgba(255,255,255,0.05)" }}>
           I don't just write code — I craft experiences. Every API endpoint, every UI component, every database query is a chance to build something that actually matters to people.
         </p>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #6ee7f7, #a5f3c0)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "#060810", fontFamily: "'Syne', sans-serif" }}>AK</div>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "#f0f0f8", fontFamily: "'Syne', sans-serif" }}>Anand Kundurthi</div>
-            <div style={{ fontSize: 10, color: "rgba(110,231,247,0.5)", fontFamily: "monospace", letterSpacing: "0.08em" }}>UI/UX Intern · Diigoo Tech</div>
+          <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #6ee7f7, #a5f3c0)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: "#060810", fontFamily: "'Syne', sans-serif", boxShadow: "0 0 20px rgba(110,231,247,0.4)" }}>AK</div>
+          <div style={{ textAlign: "left" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#f0f0f8", fontFamily: "'Syne', sans-serif" }}>Anand Kundurthi</div>
+            <div style={{ fontSize: 10, color: "rgba(110,231,247,0.5)", fontFamily: "monospace", letterSpacing: "0.1em" }}>Full-Stack Developer · Diigoo Tech</div>
           </div>
         </div>
       </div>
@@ -1213,11 +1235,15 @@ function CopyContactBtn() {
 
 /* ─── WAVE DIVIDER ──────────────────────────────────────────────────────── */
 function WaveDivider({ flip = false, color = "rgba(110,231,247,0.06)" }) {
+  const glowColor = color.replace(/[\d.]+\)$/, "0.4)");
   return (
     <div style={{ lineHeight: 0, position: "relative", zIndex: 2, transform: flip ? "scaleY(-1)" : "none" }}>
-      <svg viewBox="0 0 1440 56" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", width: "100%" }}>
-        <path d="M0,32 C240,56 480,8 720,32 C960,56 1200,8 1440,32 L1440,56 L0,56 Z" fill={color} />
-        <path d="M0,40 C360,16 720,56 1080,24 C1260,12 1380,36 1440,40 L1440,56 L0,56 Z" fill={color} opacity="0.5" />
+      <svg viewBox="0 0 1440 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block", width: "100%", filter: `drop-shadow(0 0 8px ${glowColor})` }}>
+        <path d="M0,32 C240,60 480,4 720,32 C960,60 1200,4 1440,32 L1440,64 L0,64 Z" fill={color} />
+        <path d="M0,40 C360,12 720,58 1080,22 C1260,8 1380,38 1440,42 L1440,64 L0,64 Z" fill={color} opacity="0.6" />
+        {/* Glowing edge line */}
+        <path d="M0,32 C240,60 480,4 720,32 C960,60 1200,4 1440,32" stroke={color.replace(/[\d.]+\)$/, "0.5)")} strokeWidth="1" fill="none" filter="url(#glow)"/>
+        <defs><filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
       </svg>
     </div>
   );
@@ -1236,13 +1262,14 @@ function BackToTop() {
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       style={{
         position: "fixed", bottom: 28, right: 28, zIndex: 200,
-        width: 42, height: 42, borderRadius: "50%", cursor: "none",
-        background: "rgba(6,8,16,0.9)", border: "1px solid rgba(110,231,247,0.35)",
+        width: 46, height: 46, borderRadius: "50%", cursor: "none",
+        background: "rgba(6,8,16,0.95)", border: "1px solid rgba(110,231,247,0.5)",
         color: "#6ee7f7", fontSize: 18, display: "flex", alignItems: "center",
-        justifyContent: "center", backdropFilter: "blur(12px)",
-        boxShadow: "0 0 20px rgba(110,231,247,0.15)",
-        opacity: show ? 1 : 0, transform: show ? "translateY(0)" : "translateY(16px)",
-        transition: "all 0.3s cubic-bezier(0.22,1,0.36,1)", pointerEvents: show ? "all" : "none",
+        justifyContent: "center", backdropFilter: "blur(16px)",
+        boxShadow: "0 0 30px rgba(110,231,247,0.25), 0 0 60px rgba(110,231,247,0.1), inset 0 1px 0 rgba(110,231,247,0.2)",
+        textShadow: "0 0 10px rgba(110,231,247,0.8)",
+        opacity: show ? 1 : 0, transform: show ? "translateY(0) scale(1)" : "translateY(20px) scale(0.8)",
+        transition: "all 0.4s cubic-bezier(0.22,1,0.36,1)", pointerEvents: show ? "all" : "none",
       }}
       title="Back to top"
     >↑</button>
@@ -1362,8 +1389,8 @@ function GitHubHeatmap() {
                         cursor: "default",
                         boxShadow: day.count > 3 ? "0 0 6px rgba(110,231,247,0.5)" : "none",
                       }}
-                      onMouseEnter={e => { e.target.style.transform = "scale(1.5)"; e.target.style.boxShadow = "0 0 8px rgba(110,231,247,0.8)"; }}
-                      onMouseLeave={e => { e.target.style.transform = "scale(1)"; e.target.style.boxShadow = day.count > 3 ? "0 0 6px rgba(110,231,247,0.5)" : "none"; }}
+                      onMouseEnter={e => { e.target.style.transform = "scale(2) perspective(100px) translateZ(8px)"; e.target.style.boxShadow = "0 0 12px rgba(110,231,247,1), 0 0 24px rgba(110,231,247,0.5)"; e.target.style.zIndex = "10"; e.target.style.position = "relative"; }}
+                      onMouseLeave={e => { e.target.style.transform = "scale(1)"; e.target.style.boxShadow = day.count > 3 ? "0 0 6px rgba(110,231,247,0.5)" : "none"; e.target.style.zIndex = ""; }}
                     />
                   ))}
                 </div>
@@ -1409,8 +1436,8 @@ function TechStack() {
       <section style={{ padding: "5rem 4rem", background: "rgba(255,255,255,0.008)", position: "relative", zIndex: 2 }}>
         <div className="section-label">Stack</div>
         <Reveal>
-          <h2 className="syne" style={{ fontSize: "clamp(1.6rem,3vw,2.4rem)", fontWeight: 800, letterSpacing: "-0.03em", color: "#f0f0f8", marginBottom: "2.5rem" }}>
-            Tech I Work With
+          <h2 className="syne" style={{ fontSize: "clamp(2rem,4vw,3.2rem)", fontWeight: 800, letterSpacing: "-0.03em", color: "#f0f0f8", marginBottom: "2.5rem" }}>
+            Tech I <span style={{color:"#6ee7f7",textShadow:"0 0 30px rgba(110,231,247,0.4)"}}>Work With</span>
           </h2>
         </Reveal>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
@@ -1427,14 +1454,16 @@ function TechStack() {
                 onMouseEnter={e => {
                   e.currentTarget.style.background = `${t.color}18`;
                   e.currentTarget.style.borderColor = t.color;
-                  e.currentTarget.style.transform = "translateY(-3px)";
-                  e.currentTarget.style.boxShadow = `0 8px 24px ${t.color}22`;
+                  e.currentTarget.style.transform = `perspective(300px) translateZ(16px) translateY(-5px)`;
+                  e.currentTarget.style.boxShadow = `0 12px 32px ${t.color}33, 0 0 20px ${t.color}22, inset 0 1px 0 rgba(255,255,255,0.1)`;
+                  e.currentTarget.style.textShadow = `0 0 10px ${t.color}`;
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.background = `${t.color}08`;
                   e.currentTarget.style.borderColor = `${t.color}33`;
-                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.transform = "perspective(300px) translateZ(0) translateY(0)";
                   e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.textShadow = "none";
                 }}
               >
                 <span style={{ fontSize: 16 }}>{t.icon}</span>
@@ -1475,9 +1504,9 @@ function LookingFor() {
           {prefs.map((p, i) => (
             <Reveal key={p.label} delay={i * 0.06}>
               <div
-                style={{ padding: "1.6rem 2rem", background: "#060810", transition: "background 0.3s" }}
-                onMouseEnter={e => e.currentTarget.style.background = "rgba(110,231,247,0.03)"}
-                onMouseLeave={e => e.currentTarget.style.background = "#060810"}
+                style={{ padding: "1.6rem 2rem", background: "#060810", transition: "all 0.4s cubic-bezier(0.23,1,0.32,1)", transformStyle: "preserve-3d" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(110,231,247,0.04)"; e.currentTarget.style.transform = "perspective(400px) translateZ(14px)"; e.currentTarget.style.boxShadow = "0 0 30px rgba(110,231,247,0.06)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "#060810"; e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "none"; }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                   <span style={{ fontSize: 18 }}>{p.icon}</span>
@@ -1705,6 +1734,7 @@ export default function App() {
         @keyframes glitch1 { 0%,85%,100%{opacity:0;transform:translate(0)} 86%{opacity:0.7;transform:translate(-3px,0);clip-path:inset(20% 0 50% 0)} 88%{opacity:0.7;transform:translate(3px,0);clip-path:inset(60% 0 15% 0)} 90%{opacity:0;} }
         @keyframes glitch2 { 0%,87%,100%{opacity:0;transform:translate(0)} 88%{opacity:0.5;transform:translate(3px,0);clip-path:inset(40% 0 30% 0)} 89%{opacity:0.5;transform:translate(-3px,0);clip-path:inset(10% 0 70% 0)} 91%{opacity:0;} }
         @keyframes neonFlicker { 0%,95%,100%{opacity:1} 96%{opacity:0.7} 97%{opacity:1} 98%{opacity:0.5} 99%{opacity:1} }
+        @keyframes signalBar { 0%,100%{transform:scaleY(1);opacity:0.7} 50%{transform:scaleY(1.6);opacity:1} }
         @keyframes lensFlare { 0%,100%{opacity:0;transform:translate(-50%,-50%) scale(0.8)} 50%{opacity:1;transform:translate(-50%,-50%) scale(1)} }
         @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
         @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
@@ -2233,10 +2263,21 @@ export default function App() {
         </SectionReveal>
 
       <WaveDivider color="rgba(110,231,247,0.04)" />
-      <footer style={{ textAlign: "center", padding: "1.5rem 4rem", borderTop: "1px solid rgba(110,231,247,0.06)", position: "relative", zIndex: 2 }}>
-        <span style={{ fontSize: 10, color: "rgba(232,232,240,0.18)", fontFamily: "monospace", letterSpacing: "0.1em" }}>
-          Crafted with curiosity, coffee, and way too many open tabs · 2026 Anand Kundurthi
-        </span>
+      <footer style={{ padding: "2rem 4rem", borderTop: "1px solid rgba(110,231,247,0.08)", position: "relative", zIndex: 2, background: "linear-gradient(180deg, transparent, rgba(110,231,247,0.015))", boxShadow: "inset 0 1px 0 rgba(110,231,247,0.06)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+          <span style={{ fontSize: 10, color: "rgba(232,232,240,0.2)", fontFamily: "monospace", letterSpacing: "0.12em" }}>
+            Crafted with curiosity, coffee, and way too many open tabs
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 6, height: 6, background: "#4ade80", borderRadius: "50%", boxShadow: "0 0 8px rgba(74,222,128,0.8)", animation: "pulseGreen 2s infinite" }} />
+            <span style={{ fontSize: 10, color: "rgba(110,231,247,0.4)", fontFamily: "monospace", letterSpacing: "0.1em" }}>© 2026 Anand Kundurthi</span>
+          </div>
+          <span style={{ fontSize: 10, color: "rgba(232,232,240,0.15)", fontFamily: "monospace", letterSpacing: "0.1em" }}>
+            Built with React · Vercel
+          </span>
+        </div>
+        {/* Neon bottom glow line */}
+        <div style={{ marginTop: "1.2rem", height: "1px", background: "linear-gradient(90deg, transparent, rgba(110,231,247,0.15), rgba(165,243,192,0.1), rgba(110,231,247,0.15), transparent)", boxShadow: "0 0 10px rgba(110,231,247,0.1)" }} />
       </footer>
     </div>
     </ToastProvider>
