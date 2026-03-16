@@ -426,11 +426,15 @@ function TiltCard({ children, color }) {
     const rect = el.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const rotX = ((y - rect.height / 2) / rect.height) * -12;
-    const rotY = ((x - rect.width / 2) / rect.width) * 12;
-    el.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.02,1.02,1.02)`;
-    el.style.boxShadow = `0 24px 80px rgba(0,0,0,0.5), 0 0 40px ${color}18`;
-    el.style.transition = "box-shadow 0.1s, transform 0.1s";
+    const rotX = ((y - rect.height / 2) / rect.height) * -28;
+    const rotY = ((x - rect.width / 2) / rect.width) * 28;
+    el.style.transform = `perspective(700px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.06,1.06,1.06) translateZ(30px)`;
+    // Rim light — brighten the edge facing the mouse
+    const rimX = (x / rect.width) * 100;
+    const rimY = (y / rect.height) * 100;
+    el.style.boxShadow = `0 40px 120px rgba(0,0,0,0.7), 0 0 80px ${color}30, 0 0 30px ${color}18, inset 0 1px 0 rgba(255,255,255,0.08)`;
+    el.style.outline = `1px solid ${color}40`;
+    el.style.transition = "box-shadow 0.08s, transform 0.08s, outline 0.08s";
     // Shine layer follows mouse
     if (shineRef.current) {
       const px = (x / rect.width) * 100;
@@ -441,9 +445,10 @@ function TiltCard({ children, color }) {
   }, [color]);
   const onLeave = useCallback(() => {
     const el = ref.current; if (!el) return;
-    el.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
-    el.style.transition = "all 0.6s cubic-bezier(0.23,1,0.32,1)";
+    el.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1) translateZ(0)";
+    el.style.transition = "all 0.7s cubic-bezier(0.23,1,0.32,1)";
     el.style.boxShadow = "none";
+    el.style.outline = "1px solid transparent";
     if (shineRef.current) shineRef.current.style.opacity = "0";
   }, []);
   return (
@@ -1546,6 +1551,172 @@ function Particles3D() {
   return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 0.6 }} />;
 }
 
+
+/* ─── 3D MORPHING BACKGROUND ────────────────────────────────────────────── */
+function MorphBg() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let W, H, animId, mx = 0.5, my = 0.5;
+
+    const resize = () => {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("mousemove", e => {
+      mx = e.clientX / window.innerWidth;
+      my = e.clientY / window.innerHeight;
+    }, { passive: true });
+
+    let t = 0;
+    // Morphing blob control points
+    const blobs = [
+      { x: 0.25, y: 0.3,  r: 0.22, color: "rgba(110,231,247,", phase: 0   },
+      { x: 0.75, y: 0.6,  r: 0.18, color: "rgba(165,243,192,", phase: 1.2 },
+      { x: 0.5,  y: 0.8,  r: 0.15, color: "rgba(110,231,247,", phase: 2.4 },
+    ];
+
+    const draw = () => {
+      animId = requestAnimationFrame(draw);
+      t += 0.008;
+      ctx.clearRect(0, 0, W, H);
+
+      blobs.forEach(b => {
+        // Morph position with mouse influence + time
+        const bx = (b.x + Math.sin(t + b.phase) * 0.08 + (mx - 0.5) * 0.06) * W;
+        const by = (b.y + Math.cos(t * 0.7 + b.phase) * 0.06 + (my - 0.5) * 0.04) * H;
+        const br = (b.r + Math.sin(t * 1.3 + b.phase) * 0.02) * Math.min(W, H);
+
+        // Draw morphing blob using bezier curves
+        const pts = 8;
+        ctx.beginPath();
+        for (let i = 0; i <= pts; i++) {
+          const angle = (i / pts) * Math.PI * 2;
+          const warp = 1 + Math.sin(t * 1.8 + angle * 3 + b.phase) * 0.18;
+          const r = br * warp;
+          const px = bx + Math.cos(angle) * r;
+          const py = by + Math.sin(angle) * r;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+
+        const grad = ctx.createRadialGradient(bx, by, 0, bx, by, br * 1.2);
+        grad.addColorStop(0, b.color + "0.06)");
+        grad.addColorStop(0.5, b.color + "0.03)");
+        grad.addColorStop(1, b.color + "0)");
+        ctx.fillStyle = grad;
+        ctx.fill();
+      });
+    };
+    draw();
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+  return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 1 }} />;
+}
+
+
+/* ─── MORPHING 3D BACKGROUND ────────────────────────────────────────────── */
+function MorphBg() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let W, H, animId;
+    let mx = 0.5, my = 0.5, tmx = 0.5, tmy = 0.5;
+    let t = 0;
+
+    const resize = () => {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("mousemove", e => {
+      tmx = e.clientX / window.innerWidth;
+      tmy = e.clientY / window.innerHeight;
+    }, { passive: true });
+
+    const draw = () => {
+      animId = requestAnimationFrame(draw);
+      t += 0.008;
+      // Smooth mouse follow
+      mx += (tmx - mx) * 0.04;
+      my += (tmy - my) * 0.04;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Draw 3 morphing blobs at different depths
+      const blobs = [
+        { x: 0.25 + mx * 0.3, y: 0.3 + my * 0.25, r: Math.min(W,H) * (0.22 + 0.04 * Math.sin(t * 1.1)), color: "rgba(110,231,247,0.025)", speed: 1 },
+        { x: 0.7 + mx * -0.2, y: 0.65 + my * -0.2, r: Math.min(W,H) * (0.18 + 0.05 * Math.sin(t * 0.7 + 1)), color: "rgba(165,243,192,0.018)", speed: -0.7 },
+        { x: 0.5 + mx * 0.15, y: 0.15 + my * 0.3, r: Math.min(W,H) * (0.14 + 0.04 * Math.sin(t * 1.4 + 2)), color: "rgba(240,171,252,0.015)", speed: 0.5 },
+      ];
+
+      blobs.forEach((b, bi) => {
+        const cx = b.x * W;
+        const cy = b.y * H;
+        const pts = 8;
+        ctx.beginPath();
+        for (let i = 0; i <= pts; i++) {
+          const angle = (i / pts) * Math.PI * 2;
+          // Morph radius with sine waves for organic feel
+          const noise =
+            Math.sin(angle * 2 + t * b.speed) * 0.18 +
+            Math.sin(angle * 3 - t * b.speed * 1.3) * 0.12 +
+            Math.sin(angle * 5 + t * b.speed * 0.7) * 0.06;
+          const r = b.r * (1 + noise);
+          const x = cx + Math.cos(angle) * r;
+          const y = cy + Math.sin(angle) * r;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        // Radial gradient fill for 3D depth illusion
+        const grd = ctx.createRadialGradient(cx - b.r * 0.2, cy - b.r * 0.2, b.r * 0.1, cx, cy, b.r * 1.2);
+        grd.addColorStop(0, b.color.replace(")", ", 2)").replace("rgba", "rgba").replace(", 2)", "").replace(/[\d.]+\)$/, (v) => String(parseFloat(v) * 2.5 + ")").replace(")", "")));
+        grd.addColorStop(0, b.color);
+        grd.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = grd;
+        ctx.fill();
+      });
+
+      // Faint grid lines that follow perspective
+      const gridAlpha = 0.018;
+      const gridCount = 8;
+      ctx.strokeStyle = `rgba(110,231,247,${gridAlpha})`;
+      ctx.lineWidth = 0.5;
+      // Horizontal grid with perspective skew based on mouse
+      for (let i = 0; i <= gridCount; i++) {
+        const y = (i / gridCount) * H;
+        const skew = (mx - 0.5) * 40;
+        ctx.beginPath();
+        ctx.moveTo(-50, y + skew * (y / H - 0.5));
+        ctx.lineTo(W + 50, y - skew * (y / H - 0.5));
+        ctx.stroke();
+      }
+      for (let i = 0; i <= gridCount; i++) {
+        const x = (i / gridCount) * W;
+        const skew = (my - 0.5) * 40;
+        ctx.beginPath();
+        ctx.moveTo(x + skew * (x / W - 0.5), -50);
+        ctx.lineTo(x - skew * (x / W - 0.5), H + 50);
+        ctx.stroke();
+      }
+    };
+    draw();
+    return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); };
+  }, []);
+  return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 1 }} />;
+}
+
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -1575,6 +1746,7 @@ export default function App() {
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
         @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
         @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
+        @keyframes floatZ { 0%,100%{transform:perspective(600px) rotateX(4deg) translateZ(0)} 50%{transform:perspective(600px) rotateX(4deg) translateZ(12px)} }
         @keyframes pulseGreen { 0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.4)} 50%{box-shadow:0 0 0 8px rgba(74,222,128,0)} }
         @keyframes floatY { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-18px)} }
         @keyframes glowPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
@@ -1583,6 +1755,7 @@ export default function App() {
         @keyframes toastSlide { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
         @keyframes rippleOut { from{width:0;height:0;opacity:0.8} to{width:120px;height:120px;opacity:0} }
         @keyframes rotateBorder { from{filter:blur(2px) hue-rotate(0deg)} to{filter:blur(2px) hue-rotate(360deg)} }
+        .hero-name-3d { transform: perspective(500px) rotateX(3deg); filter: drop-shadow(2px 3px 0 rgba(110,231,247,0.3)) drop-shadow(4px 6px 0 rgba(110,231,247,0.18)) drop-shadow(6px 9px 0 rgba(110,231,247,0.1)) drop-shadow(8px 12px 16px rgba(0,0,0,0.5)) drop-shadow(0 0 40px rgba(110,231,247,0.12)); transition: transform 0.7s cubic-bezier(0.23,1,0.32,1), filter 0.7s; }
         .nav-btn { transition: color 0.2s, border-color 0.2s !important; }
         .syne { font-family: 'Syne', sans-serif !important; }
         .nav-btn { background:none; border:none; color:rgba(232,232,240,0.45); font-size:11px; letter-spacing:0.15em; text-transform:uppercase; font-family:'DM Sans',sans-serif; transition:color 0.2s; padding:6px 0; cursor:none; }
@@ -1602,7 +1775,9 @@ export default function App() {
         .skill-cell { contain: layout style; background:#060810; padding:1.8rem; transition:background 0.3s, transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s; position:relative; overflow:hidden; transform-style:preserve-3d; }
         .skill-cell::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(110,231,247,0.07), transparent 60%); opacity:0; transition:opacity 0.3s; pointer-events:none; }
         .skill-cell:hover::after { opacity:1; }
-        .skill-cell:hover { background:rgba(110,231,247,0.04); transform:perspective(500px) rotateX(-3deg) translateZ(18px) scale(1.02); box-shadow:0 28px 80px rgba(0,0,0,0.5), 0 0 40px rgba(110,231,247,0.1), inset 0 1px 0 rgba(110,231,247,0.15); }
+        .skill-cell:hover { background:rgba(110,231,247,0.05); transform:perspective(350px) rotateX(-7deg) rotateY(3deg) translateZ(32px) scale(1.04); box-shadow:0 40px 120px rgba(0,0,0,0.7), 0 0 60px rgba(110,231,247,0.14), inset 0 1px 0 rgba(110,231,247,0.22), inset 0 -1px 0 rgba(110,231,247,0.06); }
+        .skill-icon-3d { transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), filter 0.4s; display: inline-block; }
+        .skill-cell:hover .skill-icon-3d { transform: translateZ(40px) scale(1.3) rotateY(15deg); filter: drop-shadow(0 0 12px rgba(110,231,247,0.8)) drop-shadow(0 0 24px rgba(110,231,247,0.4)); }
         .cert-row { contain: layout; display:flex; align-items:center; gap:1.2rem; padding:1rem 1.2rem; border-bottom:1px solid rgba(255,255,255,0.05); transition:all 0.25s; }
         .cert-row:last-child { border-bottom:none; }
         .cert-row:hover { background:rgba(110,231,247,0.04); padding-left:1.8rem; }
@@ -1715,6 +1890,8 @@ export default function App() {
       <Spotlight />
       <BackToTop />
       <Particles3D />
+      <MorphBg />
+      <MorphBg />
       <HireEasterEgg />
       <ScrollProgress />
 
@@ -1785,9 +1962,28 @@ export default function App() {
                   </div>
                 </div>
                 <div style={{ fontSize: 11, color: "rgba(110,231,247,0.6)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "0.7rem", fontFamily: "monospace" }}>Hello, I'm</div>
-                <h1 className="syne" style={{ fontSize: "clamp(3rem,7vw,7rem)", fontWeight: 800, lineHeight: 0.9, letterSpacing: "-0.04em", marginBottom: "1.4rem", color: "#f0f0f8", textShadow: "0 0 40px rgba(110,231,247,0.15)" }}>
-                  Anand<br />
-                  <span style={{ background: "linear-gradient(135deg, #6ee7f7 0%, #a5f3fc 40%, #6ee7f7 70%, #a5f3c0 100%)", backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "shimmer 4s linear infinite" }}>Kundurthi</span>
+                <h1 className="syne hero-name-3d" style={{ fontSize: "clamp(3rem,7vw,7rem)", fontWeight: 800, lineHeight: 0.9, letterSpacing: "-0.04em", marginBottom: "1.4rem", color: "#f0f0f8",
+                  transformStyle: "preserve-3d", display: "inline-block",
+                  perspective: "800px",
+                }}
+                  onMouseMove={e => {
+                    const r = e.currentTarget.getBoundingClientRect();
+                    const x = ((e.clientX - r.left) / r.width - 0.5) * 30;
+                    const y = ((e.clientY - r.top) / r.height - 0.5) * -30;
+                    e.currentTarget.style.transform = `perspective(500px) rotateX(${y}deg) rotateY(${x}deg)`;
+                    e.currentTarget.style.transition = "transform 0.1s";
+                    // Shift shadow layers to follow tilt
+                    const sx = x * 0.4, sy = -y * 0.4;
+                    e.currentTarget.style.filter = `drop-shadow(${sx*0.5}px ${sy*0.5}px 0 rgba(110,231,247,0.35)) drop-shadow(${sx}px ${sy}px 0 rgba(110,231,247,0.2)) drop-shadow(${sx*1.5}px ${sy*1.5}px 0 rgba(110,231,247,0.12)) drop-shadow(${sx*2}px ${sy*2}px 12px rgba(0,0,0,0.5)) drop-shadow(0 0 30px rgba(110,231,247,0.15))`;
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = "perspective(500px) rotateX(3deg) rotateY(0deg)";
+                    e.currentTarget.style.transition = "transform 0.7s cubic-bezier(0.23,1,0.32,1), filter 0.7s";
+                    e.currentTarget.style.filter = "drop-shadow(2px 3px 0 rgba(110,231,247,0.3)) drop-shadow(4px 6px 0 rgba(110,231,247,0.18)) drop-shadow(6px 9px 0 rgba(110,231,247,0.1)) drop-shadow(8px 12px 16px rgba(0,0,0,0.5)) drop-shadow(0 0 40px rgba(110,231,247,0.12))";
+                  }}
+                >
+                  <span style={{ display: "block", transformStyle: "preserve-3d" }}>Anand</span>
+                  <span style={{ background: "linear-gradient(135deg, #6ee7f7 0%, #a5f3fc 40%, #6ee7f7 70%, #a5f3c0 100%)", backgroundSize: "200% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "shimmer 4s linear infinite", display: "block", transformStyle: "preserve-3d" }}>Kundurthi</span>
                 </h1>
                 <div className="syne" style={{ fontSize: "clamp(1rem,2.2vw,1.4rem)", fontWeight: 600, margin: "0 0 1.4rem", minHeight: "2rem", color: "rgba(232,232,240,0.65)" }}><TypingText /></div>
                 <p style={{ fontSize: "0.92rem", color: "rgba(232,232,240,0.42)", maxWidth: 480, lineHeight: 1.9, marginBottom: "2.8rem" }}>
@@ -1908,7 +2104,19 @@ export default function App() {
           {skills.map((s, i) => (
             <Reveal key={s.name} delay={i * 0.06}>
               <div className="skill-cell" onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`); e.currentTarget.style.setProperty("--my", `${((e.clientY - r.top) / r.height) * 100}%`); }}>
-                <div style={{ fontSize: "1.4rem", marginBottom: "0.9rem", color: "#6ee7f7", filter: "drop-shadow(0 0 8px rgba(110,231,247,0.6))" }}>{s.icon}</div>
+                {/* 3D floating icon cube */}
+                <div style={{ perspective: 120, marginBottom: "1rem", display: "inline-block" }}>
+                  <div
+                    style={{ width: 46, height: 46, position: "relative", transformStyle: "preserve-3d", transition: "transform 0.6s cubic-bezier(0.23,1,0.32,1)", cursor: "default" }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "rotateY(180deg) rotateX(15deg)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "rotateY(0deg) rotateX(0deg)"; }}
+                  >
+                    {/* Front face */}
+                    <div style={{ position: "absolute", inset: 0, background: "rgba(110,231,247,0.06)", border: "1px solid rgba(110,231,247,0.25)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.4rem", backfaceVisibility: "hidden", boxShadow: "0 4px 20px rgba(110,231,247,0.15)" }}>{s.icon}</div>
+                    {/* Back face */}
+                    <div style={{ position: "absolute", inset: 0, background: "rgba(110,231,247,0.1)", border: "1px solid rgba(110,231,247,0.4)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.55rem", fontFamily: "monospace", color: "#6ee7f7", letterSpacing: "0.05em", transform: "rotateY(180deg)", backfaceVisibility: "hidden", textAlign: "center", padding: 4 }}>{s.bars.length}+</div>
+                  </div>
+                </div>
                 <div className="syne" style={{ fontWeight: 700, fontSize: "0.93rem", marginBottom: "0.9rem", color: "#f0f0f8" }}>{s.name}</div>
                 <div style={{ marginBottom: "0.8rem" }}>{s.tags.map(t => <span key={t} className="skill-pill">{t}</span>)}</div>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>{s.bars.map((b,bi) => <SkillRing key={b.name} name={b.name} pct={b.pct} delay={bi*0.1} color={["#6ee7f7","#a5f3c0","#f0abfc","#fde68a","#fca5a5","#93c5fd"][bi % 6]} />)}</div>
