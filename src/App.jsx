@@ -507,8 +507,10 @@ function TiltCard({ children, color }) {
 /* Parallax removed for performance */
 
 /* ─── HELPERS ───────────────────────────────────────────────────────────── */
+const TYPING_COLORS = ["#6ee7f7", "#a5f3c0", "#f0abfc", "#fde68a", "#fca5a5"];
 function TypingText() {
   const [idx, setIdx] = useState(0); const [text, setText] = useState(""); const [del, setDel] = useState(false);
+  const color = TYPING_COLORS[idx % TYPING_COLORS.length];
   useEffect(() => {
     const word = TYPING_WORDS[idx];
     const t = setTimeout(() => {
@@ -869,8 +871,11 @@ function ProjectRow({ p }) {
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <span style={{
               fontFamily: "monospace", fontSize: 10, color: p.color,
-              background: `${p.color}18`, border: `1px solid ${p.color}33`,
-              padding: "3px 10px", borderRadius: 20, letterSpacing: "0.1em"
+              background: `${p.color}18`, border: `1px solid ${p.color}44`,
+              padding: "4px 12px", borderRadius: 20, letterSpacing: "0.12em",
+              boxShadow: hov ? `0 0 16px ${p.color}55, inset 0 0 8px ${p.color}22` : "none",
+              textShadow: hov ? `0 0 8px ${p.color}` : "none",
+              transition: "all 0.3s",
             }}>{p.num}</span>
             <span style={{ fontSize: "1.05rem", fontWeight: 700, color: hov ? p.color : "#f0f0f8", transition: "color 0.3s", fontFamily: "'Syne', sans-serif" }}>
               {p.emoji} {p.name}
@@ -1874,10 +1879,14 @@ export default function App() {
         .syne { font-family: 'Syne', sans-serif !important; }
         .nav-btn { background:none; border:none; color:rgba(232,232,240,0.45); font-size:11px; letter-spacing:0.15em; text-transform:uppercase; font-family:'DM Sans',sans-serif; transition:color 0.2s; padding:6px 0; cursor:none; }
         .nav-btn:hover { color:#6ee7f7; text-shadow:0 0 12px rgba(110,231,247,0.7); }
-        .btn-cyan { display:inline-flex; align-items:center; gap:8px; background:#6ee7f7; color:#060810; padding:12px 26px; border:none; border-radius:4px; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; font-family:monospace; text-decoration:none; transition:all 0.25s; cursor:none; position:relative; overflow:hidden; }
-        .btn-cyan::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent); transform:translateX(-100%); transition:transform 0.5s; }
+        .btn-cyan { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,#6ee7f7,#a5f3c0); color:#060810; padding:12px 28px; border:none; border-radius:4px; font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; font-family:monospace; text-decoration:none; transition:all 0.3s cubic-bezier(0.23,1,0.32,1); cursor:none; position:relative; overflow:hidden; box-shadow:0 0 0 1px rgba(110,231,247,0.3); }
+        .btn-cyan::before { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent); transform:translateX(-100%); transition:transform 0.5s; }
+        .btn-cyan::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,#a5f3c0,#f0abfc); opacity:0; transition:opacity 0.3s; }
         .btn-cyan:hover::before { transform:translateX(100%); }
-        .btn-cyan:hover { background:#a5f3fc; transform:translateY(-2px); box-shadow:0 10px 40px rgba(110,231,247,0.55), 0 0 60px rgba(110,231,247,0.2); text-shadow:0 0 12px rgba(0,0,0,0.5); }
+        .btn-cyan:hover::after { opacity:1; }
+        .btn-cyan:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 14px 50px rgba(110,231,247,0.6), 0 0 80px rgba(110,231,247,0.25), 0 0 0 1px rgba(110,231,247,0.6); }
+        .btn-cyan:active { transform:translateY(1px) scale(0.98); box-shadow:0 4px 20px rgba(110,231,247,0.4); }
+        .btn-cyan span { position:relative; z-index:1; }
         .btn-ghost { display:inline-flex; align-items:center; gap:8px; background:transparent; color:rgba(232,232,240,0.65); padding:11px 22px; border:1px solid rgba(232,232,240,0.15); border-radius:4px; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; font-family:monospace; text-decoration:none; transition:all 0.25s; cursor:none; }
         .btn-ghost:hover { border-color:#6ee7f7; color:#6ee7f7; transform:translateY(-2px); box-shadow:0 0 20px rgba(110,231,247,0.25), inset 0 0 20px rgba(110,231,247,0.05); }
         .btn-green { display:inline-flex; align-items:center; gap:8px; background:transparent; color:#4ade80; padding:11px 22px; border:1px solid rgba(74,222,128,0.3); border-radius:4px; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; font-family:monospace; text-decoration:none; transition:all 0.25s; cursor:none; }
@@ -1898,8 +1907,10 @@ export default function App() {
         .exp-block { border-left:1px solid rgba(110,231,247,0.15); padding-left:1.6rem; margin-bottom:2.2rem; position:relative; transition:all 0.45s cubic-bezier(0.23,1,0.32,1); transform-style:preserve-3d; transform:perspective(600px) translateZ(0) rotateY(0); }
         .exp-block::before { content:''; position:absolute; left:-5px; top:4px; width:8px; height:8px; border-radius:50%; background:#6ee7f7; box-shadow:0 0 12px rgba(110,231,247,0.8); animation:glowPulse 2s ease infinite; }
         .exp-block:hover { border-left-color:rgba(110,231,247,0.5); transform:perspective(600px) translateZ(24px) rotateY(-2deg) translateX(6px); box-shadow:-8px 0 30px rgba(110,231,247,0.08); background:rgba(110,231,247,0.02); border-radius:0 8px 8px 0; padding-right:1rem; }
-        .section-label { font-family:monospace; font-size:10px; letter-spacing:0.25em; text-transform:uppercase; color:#6ee7f7; margin-bottom:1rem; display:flex; align-items:center; gap:12px; text-shadow:0 0 16px rgba(110,231,247,0.6); }
-        .section-label::after { content:''; width:40px; height:1px; background:rgba(110,231,247,0.3); }
+        .section-label { font-family:monospace; font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:#6ee7f7; margin-bottom:1rem; display:flex; align-items:center; gap:12px; text-shadow:0 0 20px rgba(110,231,247,0.7); position:relative; }
+        .section-label::before { content:''; position:absolute; left:-16px; top:50%; width:8px; height:8px; background:#6ee7f7; border-radius:50%; transform:translateY(-50%); box-shadow:0 0 10px rgba(110,231,247,0.9), 0 0 20px rgba(110,231,247,0.4); animation:glowPulse 2s ease infinite; }
+        .section-label::after { content:''; width:40px; height:1px; background:linear-gradient(90deg,#6ee7f7,transparent); box-shadow:0 0 6px rgba(110,231,247,0.5); animation:growLine 0.6s ease forwards; }
+        @keyframes growLine { from{width:0} to{width:40px} }
         .social-link { color:rgba(232,232,240,0.3); text-decoration:none; font-size:9px; letter-spacing:0.15em; text-transform:uppercase; font-family:monospace; writing-mode:vertical-rl; transition:all 0.25s; cursor:none; }
         .social-link:hover { color:#6ee7f7; text-shadow:0 0 10px rgba(110,231,247,0.6); }
         [data-theme="light"] .skill-cell { background: #ffffff !important; }
@@ -2009,17 +2020,30 @@ export default function App() {
       <HireEasterEgg />
       <ScrollProgress />
 
-      {/* Ambient orbs */}
-      <div style={{ position: "fixed", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(110,231,247,0.04) 0%, transparent 70%)", pointerEvents: "none", zIndex: 1, animation: "floatY 8s ease infinite" }} />
-      <div style={{ position: "fixed", bottom: -200, left: -200, width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(165,243,192,0.03) 0%, transparent 70%)", pointerEvents: "none", zIndex: 1, animation: "floatY 11s ease infinite 2s" }} />
+      {/* Ambient orbs — cyan + warm purple for contrast */}
+      <div style={{ position: "fixed", top: -200, right: -200, width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, rgba(110,231,247,0.05) 0%, transparent 70%)", pointerEvents: "none", zIndex: 1, animation: "floatY 8s ease infinite", filter: "blur(40px)" }} />
+      <div style={{ position: "fixed", bottom: -200, left: -200, width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(165,243,192,0.04) 0%, transparent 70%)", pointerEvents: "none", zIndex: 1, animation: "floatY 11s ease infinite 2s", filter: "blur(40px)" }} />
+      {/* Warm accent orb — bottom right — creates color temperature contrast */}
+      <div style={{ position: "fixed", bottom: "20%", right: "5%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(240,171,252,0.03) 0%, transparent 70%)", pointerEvents: "none", zIndex: 1, animation: "floatY 13s ease infinite 4s", filter: "blur(50px)" }} />
 
       {/* Side Socials */}
-      <div className="side-socials" style={{ position: "fixed", left: 24, top: "50%", transform: "translateY(-50%)", zIndex: 50, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
-        <div style={{ width: 1, height: 50, background: "linear-gradient(transparent, rgba(110,231,247,0.3))" }} />
-        <a href="https://github.com/anandkundurthi" target="_blank" rel="noreferrer" className="social-link">GitHub</a>
-        <a href="https://www.linkedin.com/in/anand-venkata-raghava-sai-kundurthi-75914a358/" target="_blank" rel="noreferrer" className="social-link">LinkedIn</a>
-        <a href="mailto:anandsarmak@gmail.com" className="social-link">Email</a>
-        <div style={{ width: 1, height: 50, background: "linear-gradient(rgba(110,231,247,0.3), transparent)" }} />
+      <div className="side-socials" style={{ position: "fixed", left: 20, top: "50%", transform: "translateY(-50%)", zIndex: 50, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+        <div style={{ width: 1, height: 50, background: "linear-gradient(transparent, rgba(110,231,247,0.4))", boxShadow: "0 0 4px rgba(110,231,247,0.2)" }} />
+        {[
+          { href: "https://github.com/anandkundurthi", label: "GitHub", color: "#f0abfc" },
+          { href: "https://www.linkedin.com/in/anand-venkata-raghava-sai-kundurthi-75914a358/", label: "LinkedIn", color: "#93c5fd" },
+          { href: "mailto:anandsarmak@gmail.com", label: "Email", color: "#6ee7f7" },
+        ].map((s, i) => (
+          <a key={s.label} href={s.href} target={s.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer"
+            className="social-link"
+            style={{ position: "relative" }}
+            onMouseEnter={e => { e.currentTarget.style.color = s.color; e.currentTarget.style.textShadow = `0 0 14px ${s.color}`; e.currentTarget.style.transform = "scale(1.1)"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = ""; e.currentTarget.style.textShadow = ""; e.currentTarget.style.transform = ""; }}
+          >{s.label}</a>
+        ))}
+        <div style={{ width: 1, height: 50, background: "linear-gradient(rgba(110,231,247,0.4), transparent)", boxShadow: "0 0 4px rgba(110,231,247,0.2)" }} />
+        {/* Animated dot at bottom */}
+        <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#6ee7f7", boxShadow: "0 0 8px rgba(110,231,247,0.8)", animation: "glowPulse 2s ease infinite" }} />
       </div>
 
       {/* NAV */}
@@ -2106,7 +2130,11 @@ export default function App() {
                     <Clock />
                   </div>
                 </div>
-                <div style={{ fontSize: 11, color: "rgba(110,231,247,0.6)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "0.7rem", fontFamily: "monospace" }}>Hello, I'm</div>
+                <div style={{ fontSize: 11, color: "rgba(110,231,247,0.6)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "0.7rem", fontFamily: "monospace", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ width: 6, height: 6, background: "#4ade80", borderRadius: "50%", display: "inline-block", boxShadow: "0 0 0 0 rgba(74,222,128,0.4)", animation: "pulseGreen 2s infinite" }} />
+                  Hello, I'm
+                  <span style={{ color: "rgba(110,231,247,0.3)", fontSize: 9 }}>· Full-Stack Dev</span>
+                </div>
                 <h1 className="syne hero-name-3d" style={{ fontSize: "clamp(3rem,7vw,7rem)", fontWeight: 800, lineHeight: 0.9, letterSpacing: "-0.04em", marginBottom: "1.4rem", color: "#f0f0f8",
                   transformStyle: "preserve-3d", display: "inline-block",
                   perspective: "800px",
