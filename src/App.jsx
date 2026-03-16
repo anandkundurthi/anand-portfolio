@@ -604,9 +604,9 @@ function CustomCursor() {
 
 /* ─── AVATAR ────────────────────────────────────────────────────────────── */
 function Avatar() {
-  const gradRef = useRef(null); // kept for compatibility
+  const gradRef = useRef(null);
   return (
-    <div style={{ position: "relative", flexShrink: 0 }}>
+    <div style={{ position: "relative", flexShrink: 0, transformStyle: "preserve-3d" }}>
       {/* Animated gradient halo */}
       <div ref={gradRef} style={{
         position: "absolute", inset: -4, borderRadius: "50%",
@@ -616,6 +616,19 @@ function Avatar() {
       }} />
       {/* Outer glow orb */}
       <div style={{ position: "absolute", inset: -24, borderRadius: "50%", background: "radial-gradient(circle, rgba(110,231,247,0.12) 0%, transparent 70%)", filter: "blur(18px)", zIndex: 0, animation: "glowPulse 3s ease infinite" }} />
+      {/* 3D rotating hex frame — 3 rings at different 3D angles */}
+      <div style={{ position: "absolute", inset: -20, zIndex: 0, transformStyle: "preserve-3d", animation: "spin3d 12s linear infinite" }}>
+        <div style={{ position: "absolute", inset: 0, border: "1px solid rgba(110,231,247,0.2)", borderRadius: "50%", transform: "rotateX(60deg)", boxShadow: "0 0 12px rgba(110,231,247,0.15) inset" }} />
+        <div style={{ position: "absolute", inset: 0, border: "1px solid rgba(165,243,192,0.15)", borderRadius: "50%", transform: "rotateX(60deg) rotateY(60deg)", boxShadow: "0 0 8px rgba(165,243,192,0.1) inset" }} />
+        <div style={{ position: "absolute", inset: 0, border: "1px solid rgba(240,171,252,0.12)", borderRadius: "50%", transform: "rotateX(60deg) rotateY(120deg)", boxShadow: "0 0 8px rgba(240,171,252,0.1) inset" }} />
+      </div>
+      {/* Floating orbit dot */}
+      <div style={{ position: "absolute", inset: -18, zIndex: 0, animation: "orbitDot 4s linear infinite" }}>
+        <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 7, height: 7, background: "#6ee7f7", borderRadius: "50%", boxShadow: "0 0 10px rgba(110,231,247,0.9), 0 0 20px rgba(110,231,247,0.5)" }} />
+      </div>
+      <div style={{ position: "absolute", inset: -28, zIndex: 0, animation: "orbitDot 6s linear infinite reverse" }}>
+        <div style={{ position: "absolute", top: "25%", left: 0, width: 5, height: 5, background: "#a5f3c0", borderRadius: "50%", boxShadow: "0 0 8px rgba(165,243,192,0.9)" }} />
+      </div>
       {/* Rotating dashed ring */}
       <div style={{ position: "absolute", inset: -14, borderRadius: "50%", border: "1px dashed rgba(110,231,247,0.18)", animation: "spin 10s linear infinite reverse", zIndex: 0 }} />
       {/* Photo circle — sits on top of gradient */}
@@ -889,7 +902,7 @@ function ClickRipple() {
     const onClick = (e) => {
       const id = Date.now() + Math.random();
       setRipples(r => [...r, { id, x: e.clientX, y: e.clientY }]);
-      setTimeout(() => setRipples(r => r.filter(x => x.id !== id)), 800);
+      setTimeout(() => setRipples(r => r.filter(x => x.id !== id)), 1000);
     };
     window.addEventListener("click", onClick);
     return () => window.removeEventListener("click", onClick);
@@ -897,14 +910,16 @@ function ClickRipple() {
   return (
     <>
       {ripples.map(r => (
-        <div key={r.id} style={{
-          position: "fixed", left: r.x, top: r.y, width: 0, height: 0,
-          pointerEvents: "none", zIndex: 9995,
-          border: "1.5px solid rgba(110,231,247,0.8)",
-          borderRadius: "50%",
-          transform: "translate(-50%,-50%)",
-          animation: "rippleOut 0.75s cubic-bezier(0.22,1,0.36,1) forwards",
-        }} />
+        <div key={r.id} style={{ position: "fixed", left: r.x, top: r.y, pointerEvents: "none", zIndex: 9995, transform: "translate(-50%,-50%)", transformStyle: "preserve-3d", perspective: "400px" }}>
+          {/* Ring 1 — front, fast */}
+          <div style={{ position: "absolute", width: 0, height: 0, border: "2px solid rgba(110,231,247,0.9)", borderRadius: "50%", transform: "translate(-50%,-50%) perspective(400px) rotateX(0deg)", animation: "ripple3d1 0.8s cubic-bezier(0.22,1,0.36,1) forwards", boxShadow: "0 0 8px rgba(110,231,247,0.4)" }} />
+          {/* Ring 2 — tilted, medium */}
+          <div style={{ position: "absolute", width: 0, height: 0, border: "1.5px solid rgba(165,243,192,0.6)", borderRadius: "50%", transform: "translate(-50%,-50%) perspective(400px) rotateX(55deg)", animation: "ripple3d2 0.9s cubic-bezier(0.22,1,0.36,1) 0.05s forwards" }} />
+          {/* Ring 3 — far depth, slow */}
+          <div style={{ position: "absolute", width: 0, height: 0, border: "1px solid rgba(240,171,252,0.4)", borderRadius: "50%", transform: "translate(-50%,-50%) perspective(400px) rotateX(70deg) rotateY(20deg)", animation: "ripple3d3 1s cubic-bezier(0.22,1,0.36,1) 0.1s forwards" }} />
+          {/* Center flash */}
+          <div style={{ position: "absolute", width: 8, height: 8, background: "radial-gradient(circle, rgba(110,231,247,0.9), transparent)", borderRadius: "50%", transform: "translate(-50%,-50%)", animation: "centerFlash 0.4s ease forwards" }} />
+        </div>
       ))}
     </>
   );
@@ -1659,8 +1674,14 @@ export default function App() {
         @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes avatarFloat { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-10px)} }
         @keyframes toastSlide { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes ripple3d1 { 0%{width:0;height:0;opacity:1} 100%{width:160px;height:160px;opacity:0;transform:translate(-50%,-50%) perspective(400px) rotateX(0deg)} }
+        @keyframes ripple3d2 { 0%{width:0;height:0;opacity:0.8} 100%{width:200px;height:200px;opacity:0;transform:translate(-50%,-50%) perspective(400px) rotateX(55deg)} }
+        @keyframes ripple3d3 { 0%{width:0;height:0;opacity:0.6} 100%{width:260px;height:260px;opacity:0;transform:translate(-50%,-50%) perspective(400px) rotateX(70deg) rotateY(20deg)} }
+        @keyframes centerFlash { 0%{opacity:1;transform:translate(-50%,-50%) scale(1)} 100%{opacity:0;transform:translate(-50%,-50%) scale(4)} }
         @keyframes rippleOut { from{width:0;height:0;opacity:0.8} to{width:120px;height:120px;opacity:0} }
         @keyframes rotateBorder { from{filter:blur(2px) hue-rotate(0deg)} to{filter:blur(2px) hue-rotate(360deg)} }
+        @keyframes spin3d { from{transform:rotateY(0deg) rotateX(15deg)} to{transform:rotateY(360deg) rotateX(15deg)} }
+        @keyframes orbitDot { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         .hero-name-3d { transform: perspective(500px) rotateX(3deg); filter: drop-shadow(2px 3px 0 rgba(110,231,247,0.3)) drop-shadow(4px 6px 0 rgba(110,231,247,0.18)) drop-shadow(6px 9px 0 rgba(110,231,247,0.1)) drop-shadow(8px 12px 16px rgba(0,0,0,0.5)) drop-shadow(0 0 40px rgba(110,231,247,0.12)); transition: transform 0.7s cubic-bezier(0.23,1,0.32,1), filter 0.7s; }
         .nav-btn { transition: color 0.2s, border-color 0.2s !important; }
         .syne { font-family: 'Syne', sans-serif !important; }
@@ -1684,11 +1705,12 @@ export default function App() {
         .skill-cell:hover { background:rgba(110,231,247,0.05); transform:perspective(350px) rotateX(-7deg) rotateY(3deg) translateZ(32px) scale(1.04); box-shadow:0 40px 120px rgba(0,0,0,0.7), 0 0 60px rgba(110,231,247,0.14), inset 0 1px 0 rgba(110,231,247,0.22), inset 0 -1px 0 rgba(110,231,247,0.06); }
         .skill-icon-3d { transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), filter 0.4s; display: inline-block; }
         .skill-cell:hover .skill-icon-3d { transform: translateZ(40px) scale(1.3) rotateY(15deg); filter: drop-shadow(0 0 12px rgba(110,231,247,0.8)) drop-shadow(0 0 24px rgba(110,231,247,0.4)); }
-        .cert-row { contain: layout; display:flex; align-items:center; gap:1.2rem; padding:1rem 1.2rem; border-bottom:1px solid rgba(255,255,255,0.05); transition:all 0.25s; }
+        .cert-row { contain: layout; display:flex; align-items:center; gap:1.2rem; padding:1rem 1.2rem; border-bottom:1px solid rgba(255,255,255,0.05); transition:all 0.4s cubic-bezier(0.23,1,0.32,1); transform-style:preserve-3d; }
         .cert-row:last-child { border-bottom:none; }
-        .cert-row:hover { background:rgba(110,231,247,0.04); padding-left:1.8rem; }
-        .exp-block { border-left:1px solid rgba(255,255,255,0.08); padding-left:1.6rem; margin-bottom:2.2rem; position:relative; }
+        .cert-row:hover { background:rgba(110,231,247,0.04); transform:perspective(500px) translateZ(16px) translateX(8px); box-shadow:-4px 0 20px rgba(110,231,247,0.07); border-radius:6px; }
+        .exp-block { border-left:1px solid rgba(110,231,247,0.15); padding-left:1.6rem; margin-bottom:2.2rem; position:relative; transition:all 0.45s cubic-bezier(0.23,1,0.32,1); transform-style:preserve-3d; transform:perspective(600px) translateZ(0) rotateY(0); }
         .exp-block::before { content:''; position:absolute; left:-5px; top:4px; width:8px; height:8px; border-radius:50%; background:#6ee7f7; box-shadow:0 0 12px rgba(110,231,247,0.8); animation:glowPulse 2s ease infinite; }
+        .exp-block:hover { border-left-color:rgba(110,231,247,0.5); transform:perspective(600px) translateZ(24px) rotateY(-2deg) translateX(6px); box-shadow:-8px 0 30px rgba(110,231,247,0.08); background:rgba(110,231,247,0.02); border-radius:0 8px 8px 0; padding-right:1rem; }
         .section-label { font-family:monospace; font-size:10px; letter-spacing:0.25em; text-transform:uppercase; color:#6ee7f7; margin-bottom:1rem; display:flex; align-items:center; gap:12px; }
         .section-label::after { content:''; width:40px; height:1px; background:rgba(110,231,247,0.3); }
         .social-link { color:rgba(232,232,240,0.3); text-decoration:none; font-size:9px; letter-spacing:0.15em; text-transform:uppercase; font-family:monospace; writing-mode:vertical-rl; transition:all 0.25s; cursor:none; }
@@ -1815,7 +1837,20 @@ export default function App() {
 
       {/* NAV */}
         
-       <nav style={{ position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 2rem", background: scrolled ? "rgba(6,8,16,0.97)" : "rgba(6,8,16,0.85)", backdropFilter: "blur(20px)", boxShadow: scrolled ? "0 8px 40px rgba(0,0,0,0.4), 0 1px 0 rgba(110,231,247,0.08)" : "none", transform: scrolled ? "perspective(800px) translateZ(0px)" : "none", transition: "all 0.4s cubic-bezier(0.23,1,0.32,1)" }}>
+       <nav style={{ position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.85rem 2rem",
+        background: scrolled ? "rgba(4,6,12,0.96)" : "rgba(6,8,16,0.7)",
+        backdropFilter: "blur(24px) saturate(1.4)",
+        WebkitBackdropFilter: "blur(24px) saturate(1.4)",
+        boxShadow: scrolled
+          ? "0 1px 0 rgba(110,231,247,0.1), 0 4px 0 rgba(110,231,247,0.04), 0 8px 0 rgba(110,231,247,0.02), 0 20px 60px rgba(0,0,0,0.5)"
+          : "0 1px 0 rgba(110,231,247,0.06)",
+        transform: scrolled ? "perspective(1200px) rotateX(0.5deg) translateZ(0)" : "none",
+        borderBottom: "1px solid rgba(110,231,247,0.07)",
+        transition: "all 0.45s cubic-bezier(0.23,1,0.32,1)",
+      }}>
+        {/* Glass depth plane — sits visually behind nav content */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(110,231,247,0.025) 0%, transparent 100%)", pointerEvents: "none", zIndex: 0 }} />
+        <div style={{ position: "absolute", bottom: 0, left: "10%", right: "10%", height: "1px", background: "linear-gradient(90deg, transparent, rgba(110,231,247,0.12), transparent)", pointerEvents: "none", zIndex: 0 }} />
 
   <span className="syne" style={{ fontWeight: 800, fontSize: "1.1rem", color: "#f0f0f8" }}>
     AK<span style={{ color: "#6ee7f7" }}>.</span>
@@ -2056,7 +2091,10 @@ export default function App() {
           <Reveal>
             <div style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(232,232,240,0.28)", marginBottom: "1.8rem", fontFamily: "monospace" }}>Academic</div>
             {[{ year: "Feb 2025 – Ongoing", inst: "NxtWave CCBP 4.0 Intensive Fellowship", deg: "Full-Stack Development (Pursuing) · Remote", color: "#6ee7f7" }, { year: "2018 – 2021", inst: "Krishna University, Machilipatnam", deg: "Bachelor of Commerce (Computers) · Andhra Pradesh", color: "#a5f3c0" }].map((e, i) => (
-              <div key={i} style={{ display: "flex", gap: "1.4rem", marginBottom: "2.2rem" }}>
+              <div key={i} style={{ display: "flex", gap: "1.4rem", marginBottom: "2.2rem", transition: "all 0.4s cubic-bezier(0.23,1,0.32,1)", transformStyle: "preserve-3d" }}
+                onMouseEnter={el => { el.currentTarget.style.transform = `perspective(500px) translateZ(20px) translateX(8px) rotateY(-3deg)`; el.currentTarget.style.filter = `drop-shadow(-8px 8px 20px rgba(0,0,0,0.4))`; }}
+                onMouseLeave={el => { el.currentTarget.style.transform = "perspective(500px) translateZ(0) translateX(0) rotateY(0)"; el.currentTarget.style.filter = "none"; }}
+              >
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
                   <div style={{ width: 10, height: 10, background: e.color, borderRadius: "50%", marginTop: 3, boxShadow: `0 0 14px ${e.color}` }} />
                   {i === 0 && <div style={{ width: 1, height: 46, background: "linear-gradient(rgba(110,231,247,0.3),transparent)", marginTop: 5 }} />}
@@ -2131,7 +2169,7 @@ export default function App() {
       <WaveDivider color="rgba(110,231,247,0.04)" />
       <footer style={{ textAlign: "center", padding: "1.5rem 4rem", borderTop: "1px solid rgba(110,231,247,0.06)", position: "relative", zIndex: 2 }}>
         <span style={{ fontSize: 10, color: "rgba(232,232,240,0.18)", fontFamily: "monospace", letterSpacing: "0.1em" }}>
-          Crafted with curiosity, coffee, and way too many open tabs · 2025 Anand Kundurthi
+          Crafted with curiosity, coffee, and way too many open tabs · 2026 Anand Kundurthi
         </span>
       </footer>
     </div>
