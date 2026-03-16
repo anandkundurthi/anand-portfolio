@@ -1623,100 +1623,6 @@ function MorphBg() {
 }
 
 
-/* ─── MORPHING 3D BACKGROUND ────────────────────────────────────────────── */
-function MorphBg() {
-  const canvasRef = useRef(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    let W, H, animId;
-    let mx = 0.5, my = 0.5, tmx = 0.5, tmy = 0.5;
-    let t = 0;
-
-    const resize = () => {
-      W = canvas.width = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener("resize", resize, { passive: true });
-    window.addEventListener("mousemove", e => {
-      tmx = e.clientX / window.innerWidth;
-      tmy = e.clientY / window.innerHeight;
-    }, { passive: true });
-
-    const draw = () => {
-      animId = requestAnimationFrame(draw);
-      t += 0.008;
-      // Smooth mouse follow
-      mx += (tmx - mx) * 0.04;
-      my += (tmy - my) * 0.04;
-
-      ctx.clearRect(0, 0, W, H);
-
-      // Draw 3 morphing blobs at different depths
-      const blobs = [
-        { x: 0.25 + mx * 0.3, y: 0.3 + my * 0.25, r: Math.min(W,H) * (0.22 + 0.04 * Math.sin(t * 1.1)), color: "rgba(110,231,247,0.025)", speed: 1 },
-        { x: 0.7 + mx * -0.2, y: 0.65 + my * -0.2, r: Math.min(W,H) * (0.18 + 0.05 * Math.sin(t * 0.7 + 1)), color: "rgba(165,243,192,0.018)", speed: -0.7 },
-        { x: 0.5 + mx * 0.15, y: 0.15 + my * 0.3, r: Math.min(W,H) * (0.14 + 0.04 * Math.sin(t * 1.4 + 2)), color: "rgba(240,171,252,0.015)", speed: 0.5 },
-      ];
-
-      blobs.forEach((b, bi) => {
-        const cx = b.x * W;
-        const cy = b.y * H;
-        const pts = 8;
-        ctx.beginPath();
-        for (let i = 0; i <= pts; i++) {
-          const angle = (i / pts) * Math.PI * 2;
-          // Morph radius with sine waves for organic feel
-          const noise =
-            Math.sin(angle * 2 + t * b.speed) * 0.18 +
-            Math.sin(angle * 3 - t * b.speed * 1.3) * 0.12 +
-            Math.sin(angle * 5 + t * b.speed * 0.7) * 0.06;
-          const r = b.r * (1 + noise);
-          const x = cx + Math.cos(angle) * r;
-          const y = cy + Math.sin(angle) * r;
-          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        // Radial gradient fill for 3D depth illusion
-        const grd = ctx.createRadialGradient(cx - b.r * 0.2, cy - b.r * 0.2, b.r * 0.1, cx, cy, b.r * 1.2);
-        grd.addColorStop(0, b.color.replace(")", ", 2)").replace("rgba", "rgba").replace(", 2)", "").replace(/[\d.]+\)$/, (v) => String(parseFloat(v) * 2.5 + ")").replace(")", "")));
-        grd.addColorStop(0, b.color);
-        grd.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = grd;
-        ctx.fill();
-      });
-
-      // Faint grid lines that follow perspective
-      const gridAlpha = 0.018;
-      const gridCount = 8;
-      ctx.strokeStyle = `rgba(110,231,247,${gridAlpha})`;
-      ctx.lineWidth = 0.5;
-      // Horizontal grid with perspective skew based on mouse
-      for (let i = 0; i <= gridCount; i++) {
-        const y = (i / gridCount) * H;
-        const skew = (mx - 0.5) * 40;
-        ctx.beginPath();
-        ctx.moveTo(-50, y + skew * (y / H - 0.5));
-        ctx.lineTo(W + 50, y - skew * (y / H - 0.5));
-        ctx.stroke();
-      }
-      for (let i = 0; i <= gridCount; i++) {
-        const x = (i / gridCount) * W;
-        const skew = (my - 0.5) * 40;
-        ctx.beginPath();
-        ctx.moveTo(x + skew * (x / W - 0.5), -50);
-        ctx.lineTo(x - skew * (x / W - 0.5), H + 50);
-        ctx.stroke();
-      }
-    };
-    draw();
-    return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); };
-  }, []);
-  return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", opacity: 1 }} />;
-}
-
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -1890,7 +1796,6 @@ export default function App() {
       <Spotlight />
       <BackToTop />
       <Particles3D />
-      <MorphBg />
       <MorphBg />
       <HireEasterEgg />
       <ScrollProgress />
